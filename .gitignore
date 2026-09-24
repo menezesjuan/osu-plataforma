@@ -32,3 +32,9 @@ pnpm-debug.log*
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Banco de dados SQLite local
+data/*.sqlite
+*.sqlite
+*.sqlite-journal
+

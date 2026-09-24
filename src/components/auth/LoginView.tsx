@@ -20,7 +20,7 @@ export const LoginView: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -30,24 +30,28 @@ export const LoginView: React.FC = () => {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const result = login(username, password);
+    try {
+      const result = await login(username, password);
       if (!result.success) {
         setErrorMessage(result.message || 'Credenciais inválidas. Verifique os dados informados.');
       }
+    } catch {
+      setErrorMessage('Erro ao tentar conectar ao servidor.');
+    } finally {
       setLoading(false);
-    }, 250);
+    }
   };
 
-  const handleQuickLogin = (quickUser: string, quickPass: string) => {
+  const handleQuickLogin = async (quickUser: string, quickPass: string) => {
     setUsername(quickUser);
     setPassword(quickPass);
     setErrorMessage(null);
     setLoading(true);
-    setTimeout(() => {
-      login(quickUser, quickPass);
+    try {
+      await login(quickUser, quickPass);
+    } finally {
       setLoading(false);
-    }, 200);
+    }
   };
 
   return (

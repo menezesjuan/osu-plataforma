@@ -9,8 +9,7 @@ import {
   Clock, 
   Trash2, 
   Eye, 
-  Printer,
-  Sparkles
+  Printer
 } from 'lucide-react';
 import { useOsu } from '../../context/OsuContext';
 import { Resolution, ResolutionStatus } from '../../types';

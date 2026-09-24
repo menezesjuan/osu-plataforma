@@ -26,7 +26,7 @@ export const DebateTimerView: React.FC = () => {
   const [queue, setQueue] = useState<{ id: string; name: string; type: string }[]>([]);
   const [selectedQueueDel, setSelectedQueueDel] = useState<string>(delegations[0]?.name || '');
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Play browser synth sound
   const playAlertSound = () => {

@@ -1,12 +1,9 @@
 import React from 'react';
 import { 
   BookOpen, 
-  HelpCircle, 
   MessageSquare, 
   FileCheck2, 
-  Compass,
-  CheckCircle,
-  AlertCircle
+  Compass
 } from 'lucide-react';
 import { PROCEDURAL_RULES } from '../../data/mockData';
 

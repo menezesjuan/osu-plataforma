@@ -4,7 +4,6 @@ import {
   MapPin, 
   User, 
   Users, 
-  FileText, 
   Leaf, 
   HeartHandshake, 
   GraduationCap, 

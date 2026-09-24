@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Vote, 
   CheckCircle2, 
   XCircle, 
   MinusCircle, 
@@ -29,11 +28,9 @@ export const VotingView: React.FC = () => {
   );
   const [majorityType, setMajorityType] = useState<'simples' | 'dois_tercos'>('simples');
 
-  // Delegations that are present in the plenary
   const presentDelegations = delegations.filter(d => d.isPresent);
   const currentResolution = resolutions.find(r => r.id === (liveVote ? liveVote.resolutionId : selectedResolutionId));
 
-  // Count votes in current live session
   const votes = liveVote ? liveVote.votes : {};
   let favorCount = 0;
   let againstCount = 0;
@@ -68,50 +65,48 @@ export const VotingView: React.FC = () => {
   const pastVotedResolutions = resolutions.filter(r => r.votingResult);
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-6 bg-white min-h-full">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Vote className="w-6 h-6 text-blue-400" />
+        <h2 className="text-xl sm:text-2xl font-black text-slate-800">
           Plenário de Votações da Mesa
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Sistema oficial de escrutínio nominal e cômputo de quórum para as deliberações da OSU.
+        </h2>
+        <p className="text-xs text-slate-400 font-medium mt-0.5">
+          Painel de escrutínio nominal e cômputo de quórum para as deliberações oficiais da OSU.
         </p>
       </div>
 
-      {/* Seção Principal: Sessão de Votação Ativa ou Painel de Abertura */}
       {liveVote && currentResolution ? (
         <div className="space-y-6">
           {/* Card de Sessão Ativa */}
-          <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border-2 border-blue-500 shadow-2xl space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700/80 pb-4">
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-orange-50 via-rose-50 to-white border-2 border-orange-400 shadow-xl space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-orange-200/60 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold uppercase tracking-wider animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider animate-pulse shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-white"></span>
                     Escrutínio Aberto
                   </span>
-                  <span className="text-xs text-slate-400">Iniciado às {liveVote.startedAt}</span>
+                  <span className="text-xs text-slate-500 font-semibold">Iniciado às {liveVote.startedAt}</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+                <h3 className="text-xl font-black text-slate-800 mt-1">
                   {currentResolution.code}: {currentResolution.title}
-                </h2>
-                <p className="text-xs text-slate-300 mt-0.5">
-                  Proposição de: <strong className="text-amber-400">{currentResolution.mainSponsorName}</strong> • Quórum requerido: <strong className="text-blue-300">{liveVote.majorityType === 'simples' ? 'Maioria Simples' : 'Dois Terços (2/3)'}</strong>
+                </h3>
+                <p className="text-xs text-slate-600 font-medium">
+                  Proposta de: <strong className="text-orange-600">{currentResolution.mainSponsorName}</strong> • Quórum: <strong className="text-slate-800">{liveVote.majorityType === 'simples' ? 'Maioria Simples' : 'Dois Terços'}</strong>
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={cancelLiveVoting}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
+                  className="px-3.5 py-2 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition"
                 >
-                  <X className="w-4 h-4 text-rose-400" />
+                  <X className="w-4 h-4 text-rose-500" />
                   Cancelar
                 </button>
                 <button
                   onClick={finishLiveVoting}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-950/50 transition"
+                  className="px-5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition"
                 >
                   <Square className="w-4 h-4" />
                   Proclamar Resultado Oficial
@@ -121,31 +116,31 @@ export const VotingView: React.FC = () => {
 
             {/* Placar em Tempo Real */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-center">
-                <span className="text-3xl font-black text-emerald-400">{favorCount}</span>
-                <span className="block text-xs font-bold text-emerald-300 uppercase tracking-wider mt-1">A Favor</span>
+              <div className="p-4 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs">
+                <span className="text-3xl font-black text-emerald-600">{favorCount}</span>
+                <span className="block text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-0.5">A Favor</span>
               </div>
-              <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-center">
-                <span className="text-3xl font-black text-rose-400">{againstCount}</span>
-                <span className="block text-xs font-bold text-rose-300 uppercase tracking-wider mt-1">Contra</span>
+              <div className="p-4 rounded-2xl bg-white border border-rose-200 text-center shadow-xs">
+                <span className="text-3xl font-black text-rose-500">{againstCount}</span>
+                <span className="block text-[10px] font-bold text-rose-500 uppercase tracking-wider mt-0.5">Contra</span>
               </div>
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 text-center">
-                <span className="text-3xl font-black text-slate-300">{abstainCount}</span>
-                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Abstenções</span>
+              <div className="p-4 rounded-2xl bg-white border border-slate-200 text-center shadow-xs">
+                <span className="text-3xl font-black text-slate-600">{abstainCount}</span>
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Abstenções</span>
               </div>
-              <div className="p-4 rounded-xl bg-blue-950/40 border border-blue-500/30 text-center">
-                <span className="text-3xl font-black text-blue-400">{pendingCount}</span>
-                <span className="block text-xs font-bold text-blue-300 uppercase tracking-wider mt-1">Pendentes</span>
+              <div className="p-4 rounded-2xl bg-white border border-orange-200 text-center shadow-xs">
+                <span className="text-3xl font-black text-orange-500">{pendingCount}</span>
+                <span className="block text-[10px] font-bold text-orange-500 uppercase tracking-wider mt-0.5">Pendentes</span>
               </div>
             </div>
 
             {/* Barra Visual de Proporção */}
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-400 mb-1.5">
-                <span>Tendência do Plenário: {isPassing ? '✅ Aprovando' : '❌ Rejeitando'}</span>
-                <span>{votedTotal} de {presentDelegations.length} delegações votaram</span>
+              <div className="flex justify-between text-xs font-bold text-slate-600 mb-1.5">
+                <span>Resultado Parcial: {isPassing ? '✅ Aprovando' : '❌ Rejeitando'}</span>
+                <span>{votedTotal} de {presentDelegations.length} votantes</span>
               </div>
-              <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex">
+              <div className="w-full h-3 rounded-full bg-slate-200 overflow-hidden flex">
                 <div
                   className="bg-emerald-500 transition-all duration-300"
                   style={{ width: `${presentDelegations.length ? (favorCount / presentDelegations.length) * 100 : 0}%` }}
@@ -155,25 +150,25 @@ export const VotingView: React.FC = () => {
                   style={{ width: `${presentDelegations.length ? (againstCount / presentDelegations.length) * 100 : 0}%` }}
                 />
                 <div
-                  className="bg-slate-500 transition-all duration-300"
+                  className="bg-slate-400 transition-all duration-300"
                   style={{ width: `${presentDelegations.length ? (abstainCount / presentDelegations.length) * 100 : 0}%` }}
                 />
               </div>
             </div>
 
             {/* Ações em lote da Mesa */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800 text-xs">
-              <span className="text-slate-400">Atalhos da Mesa:</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-orange-200/50 text-xs">
+              <span className="text-slate-500 font-bold">Atalhos da Mesa:</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleQuickAll('favor')}
-                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold"
+                  className="px-3 py-1 rounded-xl bg-white border border-slate-200 text-emerald-600 text-xs font-bold hover:bg-emerald-50"
                 >
                   Marcar Todos a Favor
                 </button>
                 <button
                   onClick={() => handleQuickAll('abstencao')}
-                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  className="px-3 py-1 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50"
                 >
                   Marcar Todos Abstenção
                 </button>
@@ -183,8 +178,8 @@ export const VotingView: React.FC = () => {
 
           {/* Cédula Nominal das Delegações */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Scale className="w-5 h-5 text-blue-400" />
+            <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+              <Scale className="w-5 h-5 text-orange-500" />
               Chamada Nominal de Votos ({presentDelegations.length} Presentes)
             </h3>
 
@@ -195,32 +190,32 @@ export const VotingView: React.FC = () => {
                 return (
                   <div
                     key={del.id}
-                    className={`p-4 rounded-xl border transition flex items-center justify-between gap-3 ${
+                    className={`p-4 rounded-3xl border transition flex items-center justify-between gap-3 shadow-xs ${
                       currentVote === 'favor'
-                        ? 'bg-emerald-950/30 border-emerald-500/50'
+                        ? 'bg-emerald-50/70 border-emerald-300'
                         : currentVote === 'contra'
-                        ? 'bg-rose-950/30 border-rose-500/50'
+                        ? 'bg-rose-50/70 border-rose-300'
                         : currentVote === 'abstencao'
-                        ? 'bg-slate-800/80 border-slate-600'
-                        : 'bg-slate-900/80 border-slate-800'
+                        ? 'bg-slate-100/70 border-slate-300'
+                        : 'bg-white border-slate-100'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{del.flagEmoji}</span>
                       <div>
-                        <h4 className="font-bold text-white text-sm">{del.name}</h4>
-                        <p className="text-xs text-amber-400 font-medium">{del.representation}</p>
-                        <p className="text-[11px] text-slate-400">Delegado: {del.chiefDelegate}</p>
+                        <h4 className="font-extrabold text-slate-800 text-xs sm:text-sm">{del.name}</h4>
+                        <p className="text-[11px] text-orange-600 font-bold">{del.representation}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">Delegado: {del.chiefDelegate}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => castVote(del.id, 'favor')}
-                        className={`p-2 rounded-lg text-xs font-bold flex items-center gap-1 transition ${
+                        className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1 transition ${
                           currentVote === 'favor'
-                            ? 'bg-emerald-600 text-white shadow'
-                            : 'bg-slate-800 text-emerald-400 hover:bg-emerald-950/40 border border-slate-700'
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'bg-slate-50 text-emerald-600 hover:bg-emerald-50 border border-slate-200'
                         }`}
                         title="Votar a Favor"
                       >
@@ -230,10 +225,10 @@ export const VotingView: React.FC = () => {
 
                       <button
                         onClick={() => castVote(del.id, 'contra')}
-                        className={`p-2 rounded-lg text-xs font-bold flex items-center gap-1 transition ${
+                        className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1 transition ${
                           currentVote === 'contra'
-                            ? 'bg-rose-600 text-white shadow'
-                            : 'bg-slate-800 text-rose-400 hover:bg-rose-950/40 border border-slate-700'
+                            ? 'bg-rose-600 text-white shadow-xs'
+                            : 'bg-slate-50 text-rose-500 hover:bg-rose-50 border border-slate-200'
                         }`}
                         title="Votar Contra"
                       >
@@ -243,10 +238,10 @@ export const VotingView: React.FC = () => {
 
                       <button
                         onClick={() => castVote(del.id, 'abstencao')}
-                        className={`p-2 rounded-lg text-xs font-bold flex items-center gap-1 transition ${
+                        className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1 transition ${
                           currentVote === 'abstencao'
-                            ? 'bg-slate-600 text-white shadow'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                            ? 'bg-slate-600 text-white shadow-xs'
+                            : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'
                         }`}
                         title="Abstenção"
                       >
@@ -261,26 +256,25 @@ export const VotingView: React.FC = () => {
           </div>
         </div>
       ) : (
-        /* Painel para Iniciar Nova Votação */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-xl space-y-5">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Play className="w-5 h-5 text-blue-400" />
-              Abrir Nova Sessão de Votação
-            </h2>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Selecione o projeto de resolução em pauta e o critério de maioria exigido pelo regimento para iniciar a votação nominal dos delegados.
+          <div className="lg:col-span-2 p-6 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-5">
+            <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+              <Play className="w-5 h-5 text-orange-500" />
+              Abrir Nova Sessão de Escrutínio
+            </h3>
+            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+              Selecione o projeto de resolução em debate para iniciar a votação nominal dos delegados no plenário.
             </p>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Selecione a Resolução a ser Deliberada:
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Resolução em Pauta:
                 </label>
                 <select
                   value={selectedResolutionId}
                   onChange={(e) => setSelectedResolutionId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-orange-500 font-semibold"
                 >
                   {resolutions.map(res => (
                     <option key={res.id} value={res.id}>
@@ -291,51 +285,51 @@ export const VotingView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Critério de Quórum Regimental:
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setMajorityType('simples')}
-                    className={`p-3 rounded-xl border text-left transition ${
+                    className={`p-3.5 rounded-2xl border text-left transition ${
                       majorityType === 'simples'
-                        ? 'bg-blue-900/40 border-blue-500 text-white'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                        ? 'bg-orange-50 border-orange-400 text-orange-800 font-bold shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-600'
                     }`}
                   >
-                    <span className="font-bold text-sm block">Maioria Simples (50% + 1)</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      Aplicável para emendas, moções procedimentais e resoluções ordinárias.
+                    <span className="text-xs font-bold block">Maioria Simples (50% + 1)</span>
+                    <span className="text-[10px] text-slate-400 font-normal mt-0.5 block">
+                      Aplicável para emendas e resoluções ordinárias.
                     </span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setMajorityType('dois_tercos')}
-                    className={`p-3 rounded-xl border text-left transition ${
+                    className={`p-3.5 rounded-2xl border text-left transition ${
                       majorityType === 'dois_tercos'
-                        ? 'bg-blue-900/40 border-blue-500 text-white'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                        ? 'bg-orange-50 border-orange-400 text-orange-800 font-bold shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-600'
                     }`}
                   >
-                    <span className="font-bold text-sm block">Dois Terços (2/3)</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      Para reformas estatutárias ou resoluções de impacto escolar estrutural.
+                    <span className="text-xs font-bold block">Dois Terços (2/3)</span>
+                    <span className="text-[10px] text-slate-400 font-normal mt-0.5 block">
+                      Para reformas estatutárias estruturais.
                     </span>
                   </button>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 flex items-center justify-between">
                 <div>
-                  <span className="block font-semibold text-white">Quórum Apto para Votar:</span>
-                  <span className="text-slate-400">{presentDelegations.length} delegações presentes no plenário.</span>
+                  <span className="block font-bold text-slate-800">Quórum Presente:</span>
+                  <span className="text-slate-400 font-medium">{presentDelegations.length} turmas presentes e aptas.</span>
                 </div>
                 {presentDelegations.length === 0 && (
-                  <span className="text-rose-400 font-semibold flex items-center gap-1">
+                  <span className="text-rose-500 font-bold flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
-                    Nenhuma delegação credenciada
+                    Sem delegações presentes
                   </span>
                 )}
               </div>
@@ -343,7 +337,7 @@ export const VotingView: React.FC = () => {
               <button
                 onClick={handleStart}
                 disabled={!selectedResolutionId || presentDelegations.length === 0}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-bold shadow-lg transition flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-black shadow-md shadow-orange-500/20 transition flex items-center justify-center gap-2"
               >
                 <Play className="w-4 h-4" />
                 Iniciar Votação Nominal em Plenária
@@ -351,63 +345,59 @@ export const VotingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Card Lateral: Informações da Mesa */}
-          <div className="space-y-4">
-            <div className="p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-xl space-y-3">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <Scale className="w-4 h-4 text-blue-400" />
-                Regras de Escrutínio
-              </h3>
-              <ul className="text-xs text-slate-300 space-y-2 list-disc list-inside">
-                <li>O voto é nominal e cada delegação/turma tem direito a um voto.</li>
-                <li>As abstenções não diminuem o quórum de aprovação na maioria simples.</li>
-                <li>Em caso de empate, cabe à Mesa Diretora convocar rodada de debate conciliatório.</li>
-                <li>A proclamação do resultado atualiza automaticamente o status no Livro de Resoluções.</li>
-              </ul>
-            </div>
+          <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-3">
+            <h4 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+              <Scale className="w-4 h-4 text-orange-500" />
+              Diretrizes da Mesa
+            </h4>
+            <ul className="text-xs text-slate-500 font-medium space-y-2 list-disc list-inside">
+              <li>Cada bancada tem direito a um voto nominal e irrevogável.</li>
+              <li>As abstenções não diminuem a maioria simples na contagem.</li>
+              <li>A proclamação registra a ata oficial no Livro de Resoluções.</li>
+            </ul>
           </div>
         </div>
       )}
 
       {/* Histórico de Votações Anteriores */}
       {pastVotedResolutions.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-slate-800">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <History className="w-5 h-5 text-blue-400" />
+        <div className="space-y-4 pt-4 border-t border-slate-100">
+          <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+            <History className="w-5 h-5 text-orange-500" />
             Atas de Votações Promulgadas ({pastVotedResolutions.length})
           </h3>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {pastVotedResolutions.map(res => (
               <div 
                 key={res.id}
-                className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700">
                       {res.code}
                     </span>
-                    <h4 className="font-bold text-white text-sm">{res.title}</h4>
+                    <h5 className="font-extrabold text-slate-800 text-xs sm:text-sm">{res.title}</h5>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Proposta por: {res.mainSponsorName} • Sessão de: {res.votingResult?.date}
+                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                    Proposta por: {res.mainSponsorName} • Sessão de {res.votingResult?.date}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="text-right text-xs">
-                    <span className="text-emerald-400 font-bold">{res.votingResult?.favorable} Favor</span>
-                    <span className="text-slate-500 mx-1">|</span>
-                    <span className="text-rose-400 font-bold">{res.votingResult?.opposed} Contra</span>
-                    <span className="text-slate-500 mx-1">|</span>
-                    <span className="text-slate-400 font-bold">{res.votingResult?.abstained} Abst.</span>
+                  <div className="text-right text-xs font-bold">
+                    <span className="text-emerald-600">{res.votingResult?.favorable} Favor</span>
+                    <span className="text-slate-300 mx-1">|</span>
+                    <span className="text-rose-500">{res.votingResult?.opposed} Contra</span>
+                    <span className="text-slate-300 mx-1">|</span>
+                    <span className="text-slate-400">{res.votingResult?.abstained} Abst.</span>
                   </div>
 
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                     res.votingResult?.passed
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-500 border border-rose-200'
                   }`}>
                     {res.votingResult?.passed ? 'Aprovada' : 'Rejeitada'}
                   </span>

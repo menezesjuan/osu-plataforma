@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  Building2, 
-  Users, 
-  FileText, 
-  CheckCircle2, 
-  Bell, 
-  Vote, 
-  Calendar,
-  AlertTriangle,
-  Send,
-  Plus
+  Calendar as CalendarIcon, 
+  ChevronLeft, 
+  ChevronRight, 
+  Globe, 
+  Atom, 
+  FlaskConical, 
+  Trophy, 
+  Calculator, 
+  Vote
 } from 'lucide-react';
 import { useOsu } from '../../context/OsuContext';
 import { ActiveTab } from '../layout/Navbar';
@@ -19,346 +18,349 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
-  const { committees, delegations, resolutions, notices, liveVote, addNotice, togglePresence } = useOsu();
-  const [showNoticeModal, setShowNoticeModal] = useState(false);
-  const [noticeTitle, setNoticeTitle] = useState('');
-  const [noticeCategory, setNoticeCategory] = useState<'mesa' | 'cronograma' | 'geral'>('mesa');
-  const [noticeContent, setNoticeContent] = useState('');
-  const [isImportant, setIsImportant] = useState(false);
+  const { liveVote, resolutions } = useOsu();
 
-  const presentCount = delegations.filter(d => d.isPresent).length;
-  const approvedResolutionsCount = resolutions.filter(r => r.status === 'aprovado').length;
-  const inDebateCount = resolutions.filter(r => r.status === 'em_debate' || r.status === 'analise_mesa').length;
+  const [activeDateIndex, setActiveDateIndex] = useState(0);
 
-  const handleCreateNotice = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!noticeTitle.trim() || !noticeContent.trim()) return;
+  // Horários do Cronograma Oficial da OSU adaptado ao estilo do mockup
+  const timetableItems = [
+    {
+      time: '08:00',
+      endTime: '08:45',
+      title: 'Abertura & Credenciamento',
+      subject: 'Plenária Geral',
+      room: 'Auditório',
+      bg: 'bg-[#ede9fe] text-[#6d28d9] border-[#ddd6fe]',
+      badgeColor: 'text-[#7c3aed]',
+      icon: Globe,
+    },
+    {
+      time: '09:00',
+      endTime: '09:50',
+      title: 'Debate no Comitê de Sustentabilidade',
+      subject: 'CSMA - Recursos & Horta',
+      room: 'Sala 102',
+      bg: 'bg-[#ffe4e6] text-[#be123c] border-[#fecdd3]',
+      badgeColor: 'text-[#e11d48]',
+      icon: Atom,
+    },
+    {
+      time: '10:00',
+      endTime: '10:45',
+      title: 'Comitê de Direitos & Convivência',
+      subject: 'CDEC - Combate ao Bullying',
+      room: 'Sala 104',
+      bg: 'bg-[#ffe4e6] text-[#be123c] border-[#fecdd3]',
+      badgeColor: 'text-[#e11d48]',
+      icon: Atom,
+    },
+    {
+      time: '11:00',
+      endTime: '11:45',
+      title: 'Redação de Projetos de Resolução',
+      subject: 'Elaboração das Cláusulas',
+      room: 'Lab 10',
+      bg: 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]',
+      badgeColor: 'text-[#16a34a]',
+      icon: FlaskConical,
+    },
+    {
+      time: '12:00',
+      endTime: '12:45',
+      title: 'Intervalo & Articulação de Bancadas',
+      subject: 'Coleta de Co-assinaturas',
+      room: 'Pátio',
+      bg: 'bg-[#fef9c3] text-[#854d0e] border-[#fef08a]',
+      badgeColor: 'text-[#ca8a04]',
+      icon: Trophy,
+    },
+    {
+      time: '13:00',
+      endTime: '13:45',
+      title: 'Mesa de Análise & Quórum',
+      subject: 'Verificação Regimental',
+      room: 'Sala 204',
+      bg: 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]',
+      badgeColor: 'text-[#0284c7]',
+      icon: Calculator,
+    },
+    {
+      time: '14:00',
+      endTime: '15:30',
+      title: 'Grande Plenária de Votação',
+      subject: 'Escrutínio Nominal de Resoluções',
+      room: 'Plenário',
+      bg: 'bg-[#ede9fe] text-[#6d28d9] border-[#ddd6fe]',
+      badgeColor: 'text-[#7c3aed]',
+      icon: Globe,
+    },
+  ];
 
-    addNotice({
-      title: noticeTitle,
-      category: noticeCategory,
-      content: noticeContent,
-      important: isImportant,
-    });
+  // Dados do Carrossel de Votações / Indicadores
+  const voteHighlights = [
+    { number: 5, label: 'RES-CSMA/01', detail: 'Escola Circular', active: true },
+    { number: '+3', label: 'Em Análise', detail: 'Comitê Direitos', active: false },
+    { number: 4, label: 'RES-CDEC/02', detail: 'Acolhimento', active: false },
+    { number: 6, label: 'RES-CEIP/03', detail: 'Lab Maker', active: false },
+  ];
 
-    setNoticeTitle('');
-    setNoticeContent('');
-    setIsImportant(false);
-    setShowNoticeModal(false);
-  };
+  // Matriz de Dias do Calendário Escolar da OSU (Setembro 2026)
+  const calendarDays = [
+    { day: 29, currentMonth: false },
+    { day: 30, currentMonth: false },
+    { day: 1, currentMonth: true },
+    { day: 2, currentMonth: true },
+    { day: 3, currentMonth: true },
+    { day: 4, currentMonth: true },
+    { day: 5, currentMonth: true },
+    { day: 6, currentMonth: true },
+    { day: 7, currentMonth: true, isSelected: false },
+    { day: 8, currentMonth: true },
+    { day: 9, currentMonth: true },
+    { day: 10, currentMonth: true },
+    { day: 11, currentMonth: true },
+    { day: 12, currentMonth: true },
+    { day: 13, currentMonth: true },
+    { day: 14, currentMonth: true },
+    { day: 15, currentMonth: true },
+    { day: 16, currentMonth: true },
+    { day: 17, currentMonth: true },
+    { day: 18, currentMonth: true, hasOrangeDot: true }, // Prazo de emendas
+    { day: 19, currentMonth: true },
+    { day: 20, currentMonth: true },
+    { day: 21, currentMonth: true },
+    { day: 22, currentMonth: true },
+    { day: 23, currentMonth: true },
+    { day: 24, currentMonth: true, isSelected: true }, // Hoje (Dia da Assembleia)
+    { day: 25, currentMonth: true },
+    { day: 26, currentMonth: true },
+    { day: 27, currentMonth: true },
+    { day: 28, currentMonth: true },
+    { day: 29, currentMonth: true },
+    { day: 30, currentMonth: true, hasGreenDot: true }, // Promulgação
+    { day: 1, currentMonth: false },
+    { day: 2, currentMonth: false },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Hero Banner do Evento */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 border border-slate-700 p-6 sm:p-8 shadow-xl">
-        <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold uppercase tracking-wider mb-3">
-            <Calendar className="w-3.5 h-3.5" />
-            Assembleia Ordinária de 2026
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Plataforma Oficial da OSU
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-slate-300 leading-relaxed">
-            Bem-vindos à mesa de deliberações da <strong className="text-amber-400 font-semibold">Organização das Salas Unidas</strong>. 
-            Acompanhe o credenciamento das delegações, a redação e votação dos Projetos de Resolução e o andamento dos debates em cada comitê escolar.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              onClick={() => onNavigate('voting')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold shadow-md shadow-blue-900/40 transition"
-            >
-              <Vote className="w-4 h-4" />
-              Painel de Votação
-            </button>
-            <button
-              onClick={() => onNavigate('resolutions')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-sm font-semibold transition"
-            >
-              <FileText className="w-4 h-4" />
-              Projetos de Resolução ({resolutions.length})
-            </button>
-            <button
-              onClick={() => onNavigate('timer')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-sm font-semibold transition"
-            >
-              Cronômetro de Oratória
-            </button>
-          </div>
-        </div>
-        <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-      </div>
-
-      {/* Alerta de Votação em Andamento */}
+    <div className="p-8 space-y-8 bg-white min-h-full">
+      
+      {/* Banner de Votação em Aberto (se houver escrutínio ativo) */}
       {liveVote && (
-        <div className="p-4 rounded-xl bg-gradient-to-r from-rose-950/80 to-slate-900 border border-rose-500/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse">
+        <div className="p-4 rounded-3xl bg-gradient-to-r from-orange-50 via-rose-50 to-white border border-orange-200/80 flex items-center justify-between shadow-sm animate-pulse">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-rose-500/20 text-rose-400">
-              <Vote className="w-6 h-6 animate-bounce" />
+            <div className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center font-bold">
+              <Vote className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">Sessão de Votação em Andamento!</h3>
-              <p className="text-xs text-rose-200/80">
-                A Mesa Diretora abriu o escrutínio para a resolução em pauta. Registre os votos das delegações.
-              </p>
+              <h4 className="text-sm font-extrabold text-slate-800">Sessão de Votação em Aberto!</h4>
+              <p className="text-xs text-slate-500">A Mesa está colhendo os votos nominais das bancadas escolares.</p>
             </div>
           </div>
           <button
             onClick={() => onNavigate('voting')}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold rounded-lg shadow transition whitespace-nowrap"
+            className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition"
           >
-            Abrir Plenário de Votação &rarr;
+            Acessar Plenário &rarr;
           </button>
         </div>
       )}
 
-      {/* Cards de Métricas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div 
-          onClick={() => onNavigate('delegations')}
-          className="p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-blue-500/50 transition cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credenciamento</span>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-white">
-            {presentCount} <span className="text-sm font-normal text-slate-400">/ {delegations.length} Salas</span>
-          </p>
-          <div className="mt-2 w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-            <div 
-              className="bg-emerald-500 h-full transition-all duration-500"
-              style={{ width: `${delegations.length ? (presentCount / delegations.length) * 100 : 0}%` }}
-            />
-          </div>
-          <p className="mt-1.5 text-[11px] text-slate-400">
-            {Math.round(delegations.length ? (presentCount / delegations.length) * 100 : 0)}% de quórum presente
-          </p>
-        </div>
-
-        <div 
-          onClick={() => onNavigate('committees')}
-          className="p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-blue-500/50 transition cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Comitês Ativos</span>
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition">
-              <Building2 className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-white">{committees.length}</p>
-          <p className="mt-3.5 text-[11px] text-slate-400">Eixos temáticos em deliberação</p>
-        </div>
-
-        <div 
-          onClick={() => onNavigate('resolutions')}
-          className="p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-blue-500/50 transition cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Em Tramitação</span>
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:scale-110 transition">
-              <FileText className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-amber-400">{inDebateCount}</p>
-          <p className="mt-3.5 text-[11px] text-slate-400">Propostas em redação e debate</p>
-        </div>
-
-        <div 
-          onClick={() => onNavigate('resolutions')}
-          className="p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-blue-500/50 transition cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aprovadas</span>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="mt-3 text-2xl font-black text-emerald-400">{approvedResolutionsCount}</p>
-          <p className="mt-3.5 text-[11px] text-slate-400">Resoluções promulgadas pela plenária</p>
-        </div>
-      </div>
-
-      {/* Grid com Mural de Avisos e Credenciamento Rápido */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Grid Principal: 2 Colunas (Timetable à esquerda, Votações + Calendário à direita) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Mural de Notícias da Mesa Diretora */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Coluna 1: Timetable (Cronograma da Sessão Escolar) */}
+        <div className="lg:col-span-7 space-y-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-blue-400" />
-              <h2 className="text-lg font-bold text-white">Mural de Avisos & Comunicados</h2>
+            <div>
+              <h2 className="text-xl font-black text-slate-800">Cronograma da Sessão</h2>
+              <p className="text-xs text-slate-400 font-medium">Quinta-feira, 24 de Setembro de 2026</p>
             </div>
-            <button
-              onClick={() => setShowNoticeModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 text-blue-300 border border-blue-500/30 text-xs font-semibold hover:bg-blue-600/30 transition"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Publicar Aviso
-            </button>
+
+            {/* Seletor de Data tipo Pill */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-600">
+              <span>24-09-2026</span>
+              <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {notices.map((notice) => (
-              <div 
-                key={notice.id}
-                className={`p-4 rounded-xl border transition ${
-                  notice.important 
-                    ? 'bg-amber-950/20 border-amber-500/40 text-amber-200' 
-                    : 'bg-slate-800/60 border-slate-700/70 text-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    {notice.important && (
-                      <span className="p-1 rounded bg-amber-500/20 text-amber-400">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                      </span>
-                    )}
-                    <h3 className="font-semibold text-white text-sm sm:text-base">{notice.title}</h3>
+          {/* Lista com Marcadores de Hora e Cards Coloridos Suaves */}
+          <div className="space-y-4">
+            {timetableItems.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div key={idx} className="flex items-center gap-4 group">
+                  {/* Horário à esquerda */}
+                  <span className="w-12 text-xs font-semibold text-slate-400 shrink-0 text-right">
+                    {item.time}
+                  </span>
+
+                  {/* Card Retangular com Cantos Arredondados estilo Astrum */}
+                  <div 
+                    onClick={() => {
+                      if (item.title.includes('Votação')) onNavigate('voting');
+                      else if (item.title.includes('Comitê')) onNavigate('committees');
+                      else if (item.title.includes('Resolução')) onNavigate('resolutions');
+                    }}
+                    className={`flex-1 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] ${item.bg}`}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-9 h-9 rounded-xl bg-white/80 shadow-xs flex items-center justify-center shrink-0">
+                        <Icon className={`w-4 h-4 ${item.badgeColor}`} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-extrabold leading-tight">{item.title}</h4>
+                        <span className="text-[11px] font-semibold opacity-75 mt-0.5 block">{item.subject}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0 pl-2">
+                      <span className="text-xs sm:text-sm font-black tracking-tight">{item.room}</span>
+                      <span className="text-[10px] font-medium opacity-70 block">{item.time} - {item.endTime}</span>
+                    </div>
                   </div>
-                  <span className="text-[11px] text-slate-400 whitespace-nowrap">{notice.timestamp}</span>
                 </div>
-                <p className="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed">{notice.content}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Credenciamento Rápido das Salas */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">Chamada das Salas</h2>
-            <button
-              onClick={() => onNavigate('delegations')}
-              className="text-xs text-blue-400 hover:text-blue-300 font-medium"
-            >
-              Ver Todas &rarr;
-            </button>
-          </div>
-
-          <div className="bg-slate-800/60 border border-slate-700/70 rounded-xl p-4 divide-y divide-slate-700/50">
-            {delegations.slice(0, 6).map((del) => (
-              <div key={del.id} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-lg">{del.flagEmoji}</span>
-                  <div>
-                    <h4 className="text-xs font-semibold text-white">{del.name}</h4>
-                    <p className="text-[10px] text-slate-400">{del.representation}</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => togglePresence(del.id)}
-                  className={`px-2.5 py-1 rounded text-[11px] font-semibold transition ${
-                    del.isPresent 
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                      : 'bg-slate-700/60 text-slate-400 hover:bg-slate-700'
-                  }`}
-                >
-                  {del.isPresent ? 'Presente' : 'Ausente'}
-                </button>
+        {/* Coluna 2: Destaques das Votações & Calendário */}
+        <div className="lg:col-span-5 space-y-8">
+          
+          {/* Card 1: Destaques de Votação (Círculo Laranja com Slider) */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-800">Deliberações Recentes</h3>
+                <span className="text-[11px] font-semibold text-slate-400">Plenária OSU • Sessão Oficial</span>
               </div>
-            ))}
-          </div>
+              <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2.5 py-1 rounded-full">
+                {resolutions.length} em pauta
+              </span>
+            </div>
 
-          <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 text-xs text-slate-300">
-            💡 <strong>Dica da Mesa:</strong> Alunos ausentes não são computados na contagem do quórum de votação qualificada.
-          </div>
-        </div>
-
-      </div>
-
-      {/* Modal para criar Aviso */}
-      {showNoticeModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Bell className="w-5 h-5 text-blue-400" />
-                Novo Comunicado Oficial
-              </h3>
+            {/* Slider de Círculos com Destaque Central Laranja */}
+            <div className="flex items-center justify-center gap-3 pt-3">
               <button 
-                onClick={() => setShowNoticeModal(false)}
-                className="text-slate-400 hover:text-white"
+                onClick={() => setActiveDateIndex(prev => Math.max(0, prev - 1))}
+                className="w-7 h-7 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 flex items-center justify-center transition"
               >
-                ✕
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {voteHighlights.map((vh, i) => {
+                const isItemActive = i === activeDateIndex;
+                return (
+                  <div key={i} className="flex flex-col items-center">
+                    <button
+                      onClick={() => setActiveDateIndex(i)}
+                      className={`flex items-center justify-center font-black transition-all ${
+                        isItemActive
+                          ? 'w-16 h-16 rounded-full bg-[#ff5722] text-white text-2xl shadow-lg shadow-orange-500/30 scale-105'
+                          : 'w-10 h-10 rounded-full bg-slate-100 text-slate-500 text-xs font-bold hover:bg-slate-200'
+                      }`}
+                    >
+                      {vh.number}
+                    </button>
+                  </div>
+                );
+              })}
+
+              <button 
+                onClick={() => setActiveDateIndex(prev => Math.min(voteHighlights.length - 1, prev + 1))}
+                className="w-7 h-7 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 flex items-center justify-center transition"
+              >
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateNotice} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Título do Comunicado</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Início da sessão do comitê de sustentabilidade"
-                  value={noticeTitle}
-                  onChange={(e) => setNoticeTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Categoria</label>
-                <select
-                  value={noticeCategory}
-                  onChange={(e) => setNoticeCategory(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:border-blue-500"
-                >
-                  <option value="mesa">Mesa Diretora</option>
-                  <option value="cronograma">Cronograma / Prazos</option>
-                  <option value="geral">Aviso Geral</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Conteúdo</label>
-                <textarea
-                  required
-                  rows={4}
-                  placeholder="Instruções para os delegados e turmas..."
-                  value={noticeContent}
-                  onChange={(e) => setNoticeContent(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="important-check"
-                  checked={isImportant}
-                  onChange={(e) => setIsImportant(e.target.checked)}
-                  className="w-4 h-4 rounded text-blue-600 bg-slate-800 border-slate-700"
-                />
-                <label htmlFor="important-check" className="text-xs text-slate-300 cursor-pointer">
-                  Marcar como aviso urgente / de alta prioridade
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setShowNoticeModal(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-700"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500 shadow"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Publicar
-                </button>
-              </div>
-            </form>
+            {/* Detalhes da Resolução selecionada no slider */}
+            <div className="text-center pt-2">
+              <span className="text-xs font-extrabold text-slate-800 block">Sustentabilidade Escolar</span>
+              <span className="text-[11px] text-slate-400 font-medium">RES-CSMA/01 • Aprovada por 7 votos favoráveis</span>
+            </div>
           </div>
+
+          {/* Card 2: Calendário de Atividades & Prazos (Homeworks & Tests) */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-800">Atividades & Prazos</h3>
+                <span className="text-[11px] font-semibold text-slate-400">Setembro 2026</span>
+              </div>
+              <div className="flex items-center gap-1 text-slate-400">
+                <button className="p-1 hover:text-slate-700">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button className="p-1 hover:text-slate-700">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Tabela do Calendário */}
+            <div>
+              {/* Dias da Semana */}
+              <div className="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
+                <span>Dom</span>
+              </div>
+
+              {/* Grid de Dias */}
+              <div className="grid grid-cols-7 text-center gap-y-2 text-xs font-bold text-slate-700">
+                {calendarDays.map((item, idx) => (
+                  <div key={idx} className="flex flex-col items-center justify-center h-8 relative">
+                    <span
+                      className={`w-7 h-7 flex items-center justify-center rounded-full transition ${
+                        item.isSelected
+                          ? 'bg-slate-900 text-white shadow-sm font-black'
+                          : !item.currentMonth
+                          ? 'text-slate-300 font-normal'
+                          : 'hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {item.day}
+                    </span>
+
+                    {/* Pontinhos de Notificação Coloridos */}
+                    {item.hasOrangeDot && (
+                      <span className="absolute bottom-0 w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                    )}
+                    {item.hasGreenDot && (
+                      <span className="absolute bottom-0 w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Legenda de Cores */}
+            <div className="flex items-center justify-center gap-4 pt-3 border-t border-slate-100 text-[11px] font-semibold text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-slate-900"></span>
+                Assembleia Hoje
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                Prazos Minutas
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Promulgação
+              </span>
+            </div>
+          </div>
+
         </div>
-      )}
+
+      </div>
+
     </div>
   );
 };

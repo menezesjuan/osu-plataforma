@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { OsuProvider } from './context/OsuContext';
-import { Navbar, ActiveTab } from './components/layout/Navbar';
+import { Sidebar } from './components/layout/Sidebar';
+import { Header } from './components/layout/Header';
+import { RightPanel } from './components/layout/RightPanel';
+import { ActiveTab } from './components/layout/Navbar';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DelegationsView } from './components/delegations/DelegationsView';
 import { CommitteesView } from './components/committees/CommitteesView';
@@ -13,29 +16,32 @@ export const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="w-full max-w-[1480px] bg-white rounded-[32px] sm:rounded-[40px] shadow-[0_20px_60px_rgba(30,41,59,0.06)] border border-slate-200/60 flex flex-col lg:flex-row overflow-hidden min-h-[900px] my-auto">
+      
+      {/* Barra Lateral Esquerda com Menu e Ilustração */}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {activeTab === 'dashboard' && <DashboardView onNavigate={setActiveTab} />}
-        {activeTab === 'delegations' && <DelegationsView />}
-        {activeTab === 'committees' && <CommitteesView onNavigate={setActiveTab} />}
-        {activeTab === 'resolutions' && <ResolutionsView onNavigate={setActiveTab} />}
-        {activeTab === 'voting' && <VotingView />}
-        {activeTab === 'timer' && <DebateTimerView />}
-        {activeTab === 'rules' && <RulesView />}
-      </main>
+      {/* Área Central Principal */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <Header 
+          onSearchClick={() => setActiveTab('resolutions')} 
+          onNotificationsClick={() => setActiveTab('dashboard')} 
+        />
 
-      <footer className="border-t border-slate-800 bg-slate-900/60 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>
-            © 2026 <strong>Organização das Salas Unidas (OSU)</strong>. Todos os direitos reservados.
-          </p>
-          <p className="text-slate-400">
-            Plataforma Aberta de Simulação e Cidadania Estudantil
-          </p>
+        <div className="flex-1 overflow-y-auto">
+          {activeTab === 'dashboard' && <DashboardView onNavigate={setActiveTab} />}
+          {activeTab === 'delegations' && <DelegationsView />}
+          {activeTab === 'committees' && <CommitteesView onNavigate={setActiveTab} />}
+          {activeTab === 'resolutions' && <ResolutionsView onNavigate={setActiveTab} />}
+          {activeTab === 'voting' && <VotingView />}
+          {activeTab === 'timer' && <DebateTimerView />}
+          {activeTab === 'rules' && <RulesView />}
         </div>
-      </footer>
+      </div>
+
+      {/* Barra Lateral Direita com Perfil e Métricas */}
+      <RightPanel />
+
     </div>
   );
 };

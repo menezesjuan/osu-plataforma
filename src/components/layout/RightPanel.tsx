@@ -1,115 +1,129 @@
-import React from 'react';
-import { LogOut, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, MessageSquare, LogOut, RotateCcw, ShieldCheck } from 'lucide-react';
 import { useOsu } from '../../context/OsuContext';
 
 export const RightPanel: React.FC = () => {
-  const { delegations, resolutions, resetAllData } = useOsu();
-
-  const presentCount = delegations.filter(d => d.isPresent).length;
-  const approvedCount = resolutions.filter(r => r.status === 'aprovado').length;
-  const totalCount = delegations.length;
-  const quorumPercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
+  const { chatMessages, sendChatMessage, resetAllData } = useOsu();
+  const [inputText, setInputText] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const userName = "Juan Menezes";
   const userInitial = userName.trim().charAt(0).toUpperCase();
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    sendChatMessage(inputText, userName, 'Presidente da Mesa', true);
+    setInputText('');
+  };
+
   return (
-    <aside className="w-80 h-full shrink-0 bg-white border-l border-slate-100 p-6 flex flex-col justify-between select-none overflow-y-auto">
+    <aside className="w-80 h-full shrink-0 bg-white border-l border-slate-100 flex flex-col justify-between select-none">
       
-      {/* Perfil do Usuário com Quadrado e Inicial */}
-      <div className="flex flex-col items-center text-center">
+      {/* Topo: Identificador do Usuário */}
+      <div className="p-5 border-b border-slate-100 flex items-center gap-3.5 bg-slate-50/40">
         {/* Quadrado com a primeira letra do nome */}
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-500/20 font-black text-3xl border border-orange-400/40">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xs font-black text-xl border border-orange-400/40 shrink-0">
           {userInitial}
         </div>
 
-        <h3 className="mt-3.5 text-base font-extrabold text-slate-800">{userName}</h3>
-        <span className="text-xs font-bold text-orange-500 mt-0.5">Presidente da Mesa</span>
+        <div className="min-w-0">
+          <h3 className="text-sm font-extrabold text-slate-800 truncate">{userName}</h3>
+          <span className="text-[11px] font-bold text-orange-500 block truncate">Presidente da Mesa</span>
+        </div>
       </div>
 
-      {/* 3 Cards de Indicadores com Métricas */}
-      <div className="space-y-3.5 my-6">
+      {/* Seção Central: Chat de Comunicação Interna */}
+      <div className="flex-1 flex flex-col min-h-0 bg-white">
         
-        {/* Card 1: Presença / Quórum de Salas */}
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-100 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Salas Presentes</span>
-            <div className="text-xl font-black text-orange-500 mt-0.5">
-              {presentCount}<span className="text-xs text-slate-400 font-semibold">/{totalCount}</span>
+        {/* Cabeçalho do Chat */}
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-orange-500" />
+            <h4 className="text-xs font-extrabold text-slate-800">Comunicação Interna</h4>
+          </div>
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Plenária Online
+          </span>
+        </div>
+
+        {/* Lista de Mensagens com Rolagem */}
+        <div className="flex-1 p-4 overflow-y-auto space-y-3">
+          {chatMessages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`p-3 rounded-2xl text-xs space-y-1 transition-all ${
+                msg.isOfficial
+                  ? 'bg-orange-50/80 border border-orange-200/70 text-slate-800 ml-2'
+                  : 'bg-slate-50 border border-slate-100 text-slate-700 mr-2'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className="font-extrabold text-[11px] text-slate-800 truncate">
+                    {msg.senderName}
+                  </span>
+                  {msg.isOfficial && (
+                    <span className="shrink-0 p-0.5 rounded bg-orange-500 text-white text-[9px] font-black" title="Mensagem Oficial da Mesa">
+                      <ShieldCheck className="w-2.5 h-2.5" />
+                    </span>
+                  )}
+                </div>
+                <span className="text-[9px] text-slate-400 font-semibold shrink-0">
+                  {msg.timestamp}
+                </span>
+              </div>
+
+              <span className="text-[10px] text-orange-600 font-bold block">
+                {msg.senderRole}
+              </span>
+
+              <p className="text-xs text-slate-700 font-medium leading-relaxed pt-0.5">
+                {msg.content}
+              </p>
             </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-black text-xs">
-            {presentCount}
-          </div>
+          ))}
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Card 2: Quórum da Plenária */}
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-100 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Quórum Apto</span>
-            <div className="text-xl font-black text-blue-600 mt-0.5">{quorumPercentage}%</div>
+        {/* Campo de Envio de Mensagem */}
+        <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Mensagem à bancada..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs placeholder:text-slate-400 focus:outline-none focus:border-orange-500 shadow-2xs"
+            />
+            <button
+              type="submit"
+              disabled={!inputText.trim()}
+              className="w-8 h-8 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 text-white flex items-center justify-center transition shadow-xs shrink-0"
+              title="Enviar mensagem"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs">
-            %
-          </div>
-        </div>
-
-        {/* Card 3: Resoluções Aprovadas */}
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-100 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Resoluções Aprovadas</span>
-            <div className="text-xl font-black text-rose-500 mt-0.5">{approvedCount}</div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center font-black text-xs">
-            RES
-          </div>
-        </div>
+          <span className="text-[9px] text-slate-400 font-medium mt-1 block pl-1">
+            Pressione Enter para enviar para o plenário
+          </span>
+        </form>
 
       </div>
 
-      {/* Medidor Radial Semi-Circular (Time / Progress Gauge) */}
-      <div className="p-4 rounded-3xl bg-slate-50/70 border border-slate-100 flex flex-col items-center justify-center relative">
-        <div className="relative w-44 h-24 flex items-end justify-center overflow-hidden">
-          <svg className="w-44 h-44 -rotate-90 origin-center absolute top-0" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              fill="transparent"
-              stroke="#e2e8f0"
-              strokeWidth="6"
-              strokeDasharray="125 125"
-              strokeDashoffset="0"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              fill="transparent"
-              stroke="#ff5722"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray="125 125"
-              strokeDashoffset="35"
-            />
-          </svg>
-
-          <div className="absolute inset-0 flex items-center justify-between px-2 pt-14 text-[9px] text-slate-400 font-bold">
-            <span>0</span>
-            <span>100</span>
-          </div>
-
-          <div className="text-center pb-1 z-10">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block">
-              Jornada OSU
-            </span>
-            <span className="text-base font-extrabold text-slate-800">4h restantes</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Rodapé: Restaurar & Sair */}
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-semibold">
+      {/* Rodapé: Ações e Restauração */}
+      <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-semibold bg-white">
         <button
           onClick={() => {
             if (window.confirm('Restaurar dados originais da simulação?')) {

@@ -75,3 +75,13 @@ export interface ProceduralRule {
   usage: string;
   priorityOrder: number;
 }
+
+export interface ChatMessage {
+  id: string;
+  senderName: string;
+  senderRole: string;
+  content: string;
+  timestamp: string;
+  isOfficial?: boolean;
+}
+

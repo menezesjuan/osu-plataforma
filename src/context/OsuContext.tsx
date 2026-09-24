@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Committee, Delegation, Resolution, Notice, LiveVoteState, ResolutionStatus } from '../types';
-import { INITIAL_COMMITTEES, INITIAL_DELEGATIONS, INITIAL_RESOLUTIONS, INITIAL_NOTICES } from '../data/mockData';
+import { Committee, Delegation, Resolution, Notice, LiveVoteState, ResolutionStatus, ChatMessage } from '../types';
+import { INITIAL_COMMITTEES, INITIAL_DELEGATIONS, INITIAL_RESOLUTIONS, INITIAL_NOTICES, INITIAL_CHAT_MESSAGES } from '../data/mockData';
 
 interface OsuContextType {
   committees: Committee[];
@@ -8,6 +8,7 @@ interface OsuContextType {
   resolutions: Resolution[];
   notices: Notice[];
   liveVote: LiveVoteState | null;
+  chatMessages: ChatMessage[];
   togglePresence: (delegationId: string) => void;
   addDelegation: (delegation: Omit<Delegation, 'id'>) => void;
   updateDelegation: (delegation: Delegation) => void;
@@ -20,6 +21,7 @@ interface OsuContextType {
   finishLiveVoting: () => void;
   cancelLiveVoting: () => void;
   addNotice: (notice: Omit<Notice, 'id' | 'timestamp'>) => void;
+  sendChatMessage: (content: string, senderName?: string, senderRole?: string, isOfficial?: boolean) => void;
   resetAllData: () => void;
 }
 
@@ -28,6 +30,7 @@ const STORAGE_KEYS = {
   RESOLUTIONS: 'osu_resolutions_v1',
   NOTICES: 'osu_notices_v1',
   LIVE_VOTE: 'osu_live_vote_v1',
+  CHAT_MESSAGES: 'osu_chat_messages_v1',
 };
 
 const OsuContext = createContext<OsuContextType | undefined>(undefined);
@@ -70,6 +73,19 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return null;
     }
   });
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CHAT_MESSAGES);
+      return saved ? JSON.parse(saved) : INITIAL_CHAT_MESSAGES;
+    } catch {
+      return INITIAL_CHAT_MESSAGES;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CHAT_MESSAGES, JSON.stringify(chatMessages));
+  }, [chatMessages]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.DELEGATIONS, JSON.stringify(delegations));
@@ -218,15 +234,32 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNotices(prev => [newNotice, ...prev]);
   };
 
+  const sendChatMessage = (content: string, senderName = 'Juan Menezes', senderRole = 'Presidente da Mesa', isOfficial = true) => {
+    if (!content.trim()) return;
+    const now = new Date();
+    const timeFormatted = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const newMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      senderName,
+      senderRole,
+      content,
+      timestamp: timeFormatted,
+      isOfficial,
+    };
+    setChatMessages(prev => [...prev, newMsg]);
+  };
+
   const resetAllData = () => {
     localStorage.removeItem(STORAGE_KEYS.DELEGATIONS);
     localStorage.removeItem(STORAGE_KEYS.RESOLUTIONS);
     localStorage.removeItem(STORAGE_KEYS.NOTICES);
     localStorage.removeItem(STORAGE_KEYS.LIVE_VOTE);
+    localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
     setDelegations(INITIAL_DELEGATIONS);
     setResolutions(INITIAL_RESOLUTIONS);
     setNotices(INITIAL_NOTICES);
     setLiveVote(null);
+    setChatMessages(INITIAL_CHAT_MESSAGES);
   };
 
   return (
@@ -237,6 +270,7 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         resolutions,
         notices,
         liveVote,
+        chatMessages,
         togglePresence,
         addDelegation,
         updateDelegation,
@@ -249,12 +283,14 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         finishLiveVoting,
         cancelLiveVoting,
         addNotice,
+        sendChatMessage,
         resetAllData,
       }}
     >
       {children}
     </OsuContext.Provider>
   );
+
 };
 
 export const useOsu = (): OsuContextType => {

@@ -325,3 +325,39 @@ export const PROCEDURAL_RULES: ProceduralRule[] = [
     priorityOrder: 5,
   }
 ];
+
+export const INITIAL_CHAT_MESSAGES: import('../types').ChatMessage[] = [
+  {
+    id: 'msg-1',
+    senderName: 'Mesa Diretora',
+    senderRole: 'Presidência',
+    content: 'Atenção bancadas: Faltam 10 minutos para o encerramento das inscrições na lista de oradores.',
+    timestamp: '11:15',
+    isOfficial: true,
+  },
+  {
+    id: 'msg-2',
+    senderName: 'Enzo Guimarães',
+    senderRole: '9º Ano A (Canadá)',
+    content: 'Enviamos as emendas da resolução de sustentabilidade à Mesa para análise prévia.',
+    timestamp: '11:18',
+    isOfficial: false,
+  },
+  {
+    id: 'msg-3',
+    senderName: 'Lívia Vasconcelos',
+    senderRole: '1º EM A (Brasil)',
+    content: 'Apoiamos a moção de debate moderado do comitê de convivência escolar.',
+    timestamp: '11:22',
+    isOfficial: false,
+  },
+  {
+    id: 'msg-4',
+    senderName: 'Juan Menezes',
+    senderRole: 'Presidente da Mesa',
+    content: 'Emendas recebidas e validadas regimentalmente. Prosseguiremos com a votação nominal.',
+    timestamp: '11:25',
+    isOfficial: true,
+  }
+];
+

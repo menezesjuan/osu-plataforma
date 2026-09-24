@@ -13,8 +13,8 @@ import { useOsu } from '../../context/OsuContext';
 export const LoginView: React.FC = () => {
   const { login } = useOsu();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -131,6 +131,11 @@ export const LoginView: React.FC = () => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-orange-50/70 border border-orange-200/60 flex items-center justify-between text-[11px] text-slate-600 font-medium">
+            <span>Credenciais da Mesa:</span>
+            <span className="font-mono font-bold text-orange-600 bg-white px-2 py-0.5 rounded-lg border border-orange-200">admin / admin123</span>
           </div>
 
           <button

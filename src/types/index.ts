@@ -85,3 +85,15 @@ export interface ChatMessage {
   isOfficial?: boolean;
 }
 
+export interface ScheduleItem {
+  id: string;
+  time: string;
+  endTime: string;
+  title: string;
+  subject: string;
+  room: string;
+  status: 'concluido' | 'em_andamento' | 'proximo';
+  category: 'plenaria' | 'comite' | 'redacao' | 'intervalo' | 'mesa';
+}
+
+

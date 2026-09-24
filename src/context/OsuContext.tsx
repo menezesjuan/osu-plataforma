@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Committee, Delegation, Resolution, Notice, LiveVoteState, ResolutionStatus, ChatMessage } from '../types';
-import { INITIAL_COMMITTEES, INITIAL_DELEGATIONS, INITIAL_RESOLUTIONS, INITIAL_NOTICES, INITIAL_CHAT_MESSAGES } from '../data/mockData';
+import { Committee, Delegation, Resolution, Notice, LiveVoteState, ResolutionStatus, ChatMessage, ScheduleItem } from '../types';
+import { INITIAL_COMMITTEES, INITIAL_DELEGATIONS, INITIAL_RESOLUTIONS, INITIAL_NOTICES, INITIAL_CHAT_MESSAGES, INITIAL_SCHEDULE_ITEMS } from '../data/mockData';
 
 interface OsuContextType {
   committees: Committee[];
@@ -9,6 +9,7 @@ interface OsuContextType {
   notices: Notice[];
   liveVote: LiveVoteState | null;
   chatMessages: ChatMessage[];
+  scheduleItems: ScheduleItem[];
   togglePresence: (delegationId: string) => void;
   addDelegation: (delegation: Omit<Delegation, 'id'>) => void;
   updateDelegation: (delegation: Delegation) => void;
@@ -22,6 +23,10 @@ interface OsuContextType {
   cancelLiveVoting: () => void;
   addNotice: (notice: Omit<Notice, 'id' | 'timestamp'>) => void;
   sendChatMessage: (content: string, senderName?: string, senderRole?: string, isOfficial?: boolean) => void;
+  addScheduleItem: (item: Omit<ScheduleItem, 'id'>) => void;
+  updateScheduleItem: (item: ScheduleItem) => void;
+  deleteScheduleItem: (id: string) => void;
+  setScheduleItemStatus: (id: string, status: 'concluido' | 'em_andamento' | 'proximo') => void;
   resetAllData: () => void;
 }
 
@@ -31,6 +36,7 @@ const STORAGE_KEYS = {
   NOTICES: 'osu_notices_v1',
   LIVE_VOTE: 'osu_live_vote_v1',
   CHAT_MESSAGES: 'osu_chat_messages_v1',
+  SCHEDULE: 'osu_schedule_v1',
 };
 
 const OsuContext = createContext<OsuContextType | undefined>(undefined);
@@ -82,6 +88,19 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return INITIAL_CHAT_MESSAGES;
     }
   });
+
+  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SCHEDULE);
+      return saved ? JSON.parse(saved) : INITIAL_SCHEDULE_ITEMS;
+    } catch {
+      return INITIAL_SCHEDULE_ITEMS;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(scheduleItems));
+  }, [scheduleItems]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CHAT_MESSAGES, JSON.stringify(chatMessages));
@@ -249,17 +268,41 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setChatMessages(prev => [...prev, newMsg]);
   };
 
+  const addScheduleItem = (item: Omit<ScheduleItem, 'id'>) => {
+    const newItem: ScheduleItem = {
+      ...item,
+      id: `sch-${Date.now()}`,
+    };
+    setScheduleItems(prev => [...prev, newItem]);
+  };
+
+  const updateScheduleItem = (updated: ScheduleItem) => {
+    setScheduleItems(prev => prev.map(item => (item.id === updated.id ? updated : item)));
+  };
+
+  const deleteScheduleItem = (id: string) => {
+    setScheduleItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const setScheduleItemStatus = (id: string, status: 'concluido' | 'em_andamento' | 'proximo') => {
+    setScheduleItems(prev =>
+      prev.map(item => (item.id === id ? { ...item, status } : item))
+    );
+  };
+
   const resetAllData = () => {
     localStorage.removeItem(STORAGE_KEYS.DELEGATIONS);
     localStorage.removeItem(STORAGE_KEYS.RESOLUTIONS);
     localStorage.removeItem(STORAGE_KEYS.NOTICES);
     localStorage.removeItem(STORAGE_KEYS.LIVE_VOTE);
     localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
+    localStorage.removeItem(STORAGE_KEYS.SCHEDULE);
     setDelegations(INITIAL_DELEGATIONS);
     setResolutions(INITIAL_RESOLUTIONS);
     setNotices(INITIAL_NOTICES);
     setLiveVote(null);
     setChatMessages(INITIAL_CHAT_MESSAGES);
+    setScheduleItems(INITIAL_SCHEDULE_ITEMS);
   };
 
   return (
@@ -271,6 +314,7 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         notices,
         liveVote,
         chatMessages,
+        scheduleItems,
         togglePresence,
         addDelegation,
         updateDelegation,
@@ -284,6 +328,10 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         cancelLiveVoting,
         addNotice,
         sendChatMessage,
+        addScheduleItem,
+        updateScheduleItem,
+        deleteScheduleItem,
+        setScheduleItemStatus,
         resetAllData,
       }}
     >

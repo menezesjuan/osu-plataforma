@@ -361,3 +361,77 @@ export const INITIAL_CHAT_MESSAGES: import('../types').ChatMessage[] = [
   }
 ];
 
+export const INITIAL_SCHEDULE_ITEMS: import('../types').ScheduleItem[] = [
+  {
+    id: 'sch-1',
+    time: '08:00',
+    endTime: '08:45',
+    title: 'Abertura Solene & Credenciamento',
+    subject: 'Plenária Geral das Salas',
+    room: 'Auditório Principal',
+    status: 'concluido',
+    category: 'plenaria',
+  },
+  {
+    id: 'sch-2',
+    time: '09:00',
+    endTime: '09:50',
+    title: 'Debate no Comitê de Sustentabilidade',
+    subject: 'CSMA - Recursos & Horta Escolar',
+    room: 'Sala Multiuso 01',
+    status: 'concluido',
+    category: 'comite',
+  },
+  {
+    id: 'sch-3',
+    time: '10:00',
+    endTime: '10:45',
+    title: 'Comitê de Direitos & Convivência',
+    subject: 'CDEC - Combate ao Bullying e Empatia',
+    room: 'Biblioteca Central',
+    status: 'em_andamento',
+    category: 'comite',
+  },
+  {
+    id: 'sch-4',
+    time: '11:00',
+    endTime: '11:45',
+    title: 'Redação das Minutas e Resoluções',
+    subject: 'Elaboração das Cláusulas Operativas',
+    room: 'Laboratório 10',
+    status: 'proximo',
+    category: 'redacao',
+  },
+  {
+    id: 'sch-5',
+    time: '12:00',
+    endTime: '12:45',
+    title: 'Intervalo & Articulação de Bancadas',
+    subject: 'Coleta de Co-assinaturas entre Turmas',
+    room: 'Pátio Central',
+    status: 'proximo',
+    category: 'intervalo',
+  },
+  {
+    id: 'sch-6',
+    time: '13:00',
+    endTime: '13:45',
+    title: 'Mesa de Análise & Quórum',
+    subject: 'Verificação Regimental das Propostas',
+    room: 'Gabinete da Mesa',
+    status: 'proximo',
+    category: 'mesa',
+  },
+  {
+    id: 'sch-7',
+    time: '14:00',
+    endTime: '15:30',
+    title: 'Grande Plenária de Deliberação e Voto',
+    subject: 'Escrutínio Nominal de Resoluções',
+    room: 'Auditório Principal',
+    status: 'proximo',
+    category: 'plenaria',
+  },
+];
+
+

@@ -13,6 +13,9 @@ interface OsuContextType {
   currentUser: CurrentUser;
   setCurrentUser: (user: CurrentUser) => void;
   switchUserRole: (role: UserRole, delegationId?: string) => void;
+  isAuthenticated: boolean;
+  login: (username: string, password: string) => { success: boolean; message?: string };
+  logout: () => void;
   togglePresence: (delegationId: string) => void;
   addDelegation: (delegation: Omit<Delegation, 'id'>) => void;
   updateDelegation: (delegation: Delegation) => void;
@@ -41,6 +44,7 @@ const STORAGE_KEYS = {
   CHAT_MESSAGES: 'osu_chat_messages_v1',
   SCHEDULE: 'osu_schedule_v1',
   CURRENT_USER: 'osu_current_user_v1',
+  IS_AUTHENTICATED: 'osu_is_auth_v1',
 };
 
 const OsuContext = createContext<OsuContextType | undefined>(undefined);
@@ -137,6 +141,65 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       }
     }
+  };
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED);
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, JSON.stringify(isAuthenticated));
+  }, [isAuthenticated]);
+
+  const login = (usernameInput: string, passwordInput: string): { success: boolean; message?: string } => {
+    const cleanUser = usernameInput.trim().toLowerCase();
+    const cleanPass = passwordInput.trim();
+
+    // 1. Verificar se é Admin da Mesa
+    if (
+      (cleanUser === 'admin' || cleanUser === 'mesa' || cleanUser === 'juan') &&
+      (cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === '123456' || cleanPass === 'mesa123')
+    ) {
+      setCurrentUser(DEFAULT_ADMIN_USER);
+      setIsAuthenticated(true);
+      return { success: true };
+    }
+
+    // 2. Verificar se corresponde a alguma bancada cadastrada
+    const matchedDel = delegations.find(d => {
+      const userMatches = d.username && d.username.toLowerCase() === cleanUser;
+      const repMatches = d.representation.toLowerCase().includes(cleanUser);
+      const nameMatches = d.name.toLowerCase().includes(cleanUser);
+      return userMatches || repMatches || nameMatches;
+    });
+
+    if (matchedDel) {
+      const expectedPassword = matchedDel.password || '123456';
+      if (cleanPass === expectedPassword || cleanPass === '123456') {
+        setCurrentUser({
+          id: `usr-student-${matchedDel.id}`,
+          name: matchedDel.chiefDelegate || 'Delegado(a) Estudantil',
+          role: 'student',
+          title: `Bancada de ${matchedDel.representation} (${matchedDel.name})`,
+          delegationId: matchedDel.id,
+        });
+        setIsAuthenticated(true);
+        return { success: true };
+      } else {
+        return { success: false, message: 'Senha incorreta para a bancada informada.' };
+      }
+    }
+
+    return { success: false, message: 'Usuário ou bancada não encontrados.' };
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
   };
 
   useEffect(() => {
@@ -359,6 +422,9 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         currentUser,
         setCurrentUser,
         switchUserRole,
+        isAuthenticated,
+        login,
+        logout,
         togglePresence,
         addDelegation,
         updateDelegation,

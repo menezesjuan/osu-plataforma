@@ -12,10 +12,15 @@ import { ResolutionsView } from './components/resolutions/ResolutionsView';
 import { VotingView } from './components/voting/VotingView';
 import { DebateTimerView } from './components/timer/DebateTimerView';
 import { RulesView } from './components/rules/RulesView';
+import { LoginView } from './components/auth/LoginView';
 
 export const AppContent: React.FC = () => {
-  const { currentUser } = useOsu();
+  const { currentUser, isAuthenticated } = useOsu();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
 
   return (
     <div className="w-full h-screen flex flex-col lg:flex-row overflow-hidden bg-white">

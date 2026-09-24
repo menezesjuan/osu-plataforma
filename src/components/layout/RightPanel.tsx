@@ -3,7 +3,7 @@ import { Send, MessageSquare, LogOut, RotateCcw, ShieldCheck } from 'lucide-reac
 import { useOsu } from '../../context/OsuContext';
 
 export const RightPanel: React.FC = () => {
-  const { chatMessages, sendChatMessage, resetAllData, currentUser, switchUserRole, delegations } = useOsu();
+  const { chatMessages, sendChatMessage, resetAllData, currentUser, switchUserRole, delegations, logout } = useOsu();
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -171,7 +171,7 @@ export const RightPanel: React.FC = () => {
         </button>
 
         <button 
-          onClick={() => alert('Sessão ativa mantida.')}
+          onClick={logout}
           className="flex items-center gap-1.5 hover:text-rose-600 transition"
         >
           <span>Sair</span>

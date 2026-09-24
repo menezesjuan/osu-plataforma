@@ -289,27 +289,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         </div>
 
         {/* Coluna 2: Cards de Tópicos em Deliberação & Calendário */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="lg:col-span-5 space-y-4">
           
-          {/* Seção Solicitada: Cards de Tópicos em Deliberação (Pautas Ativas & Próximas) */}
-          <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4">
+          {/* Seção: Cards de Tópicos em Deliberação (Máximo 2 pré-visualizáveis) */}
+          <div className="p-5 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-3.5">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-extrabold text-slate-800">Tópicos em Deliberação</h3>
-                <span className="text-[11px] font-semibold text-slate-400">Pautas Ativas e Próximas Resoluções</span>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-800">Tópicos em Deliberação</h3>
+                <span className="text-[11px] font-semibold text-slate-400">Pautas Ativas da Sessão</span>
               </div>
               <button 
                 onClick={() => onNavigate('resolutions')}
                 className="text-xs font-bold text-orange-500 hover:text-orange-600 flex items-center gap-1"
               >
-                Ver Todas
+                Ver Todas ({resolutions.length})
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Lista de Cards de Tópicos / Pautas (Máximo 3 pré-visualizáveis) */}
-            <div className="space-y-3">
-              {resolutions.slice(0, 3).map((res, index) => {
+            {/* Lista de Cards de Tópicos / Pautas (Máximo 2 itens) */}
+            <div className="space-y-2.5">
+              {resolutions.slice(0, 2).map((res, index) => {
                 const isUnderVoteNow = liveVote?.resolutionId === res.id;
                 const isDebating = res.status === 'em_debate';
                 const isApproved = res.status === 'aprovado';
@@ -317,7 +317,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                 return (
                   <div
                     key={res.id}
-                    className={`p-4 rounded-2xl border transition-all duration-200 space-y-2.5 ${
+                    className={`p-3.5 rounded-2xl border transition-all duration-200 space-y-2 ${
                       isUnderVoteNow
                         ? 'bg-gradient-to-r from-orange-50/90 to-rose-50/80 border-orange-300 shadow-xs'
                         : isDebating
@@ -358,17 +358,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                     </div>
 
                     <div>
-                      <h4 className="text-xs sm:text-sm font-extrabold text-slate-800 leading-snug">
+                      <h4 className="text-xs sm:text-sm font-extrabold text-slate-800 leading-snug line-clamp-1">
                         {res.title}
                       </h4>
-                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">
                         Proposta por: <strong className="text-slate-700">{res.mainSponsorName}</strong>
                       </p>
                     </div>
 
                     {/* Ação do Card */}
-                    <div className="pt-1.5 flex items-center justify-between border-t border-slate-200/40">
-                      <span className="text-[10px] text-slate-400 font-semibold">
+                    <div className="pt-1 flex items-center justify-between border-t border-slate-200/40">
+                      <span className="text-[10px] text-slate-400 font-semibold truncate">
                         {res.status === 'aprovado' ? 'Promulgada pela assembleia' : 'Submetida à apreciação da Mesa'}
                       </span>
 
@@ -378,7 +378,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                             startLiveVoting(res.id, 'simples');
                             onNavigate('voting');
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold shadow-2xs transition"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold shadow-2xs transition shrink-0 ml-2"
                         >
                           <Play className="w-3 h-3" />
                           Abrir Plenário
@@ -389,23 +389,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                 );
               })}
 
-              {resolutions.length > 3 && (
+              {resolutions.length > 2 && (
                 <button
                   onClick={() => onNavigate('resolutions')}
-                  className="w-full py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/60 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs"
+                  className="w-full py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/60 text-[11px] font-bold transition flex items-center justify-center gap-1.5 shadow-2xs"
                 >
-                  <span>Ver todas as {resolutions.length} pautas na aba de Resoluções</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-orange-500" />
+                  <span>Ver mais {resolutions.length - 2} pautas em Resoluções</span>
+                  <ArrowRight className="w-3 h-3 text-orange-500" />
                 </button>
               )}
             </div>
           </div>
 
           {/* Calendário de Atividades & Prazos */}
-          <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-4">
+          <div className="p-5 rounded-3xl bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-3.5">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-extrabold text-slate-800">Atividades & Prazos</h3>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-800">Atividades & Prazos</h3>
                 <span className="text-[11px] font-semibold text-slate-400">Setembro 2026</span>
               </div>
               <div className="flex items-center gap-1 text-slate-400">

@@ -16,13 +16,12 @@ export const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
   return (
-    <div className="w-full max-w-[1480px] bg-white rounded-[32px] sm:rounded-[40px] shadow-[0_20px_60px_rgba(30,41,59,0.06)] border border-slate-200/60 flex flex-col lg:flex-row overflow-hidden min-h-[900px] my-auto">
-      
-      {/* Barra Lateral Esquerda com Menu e Ilustração */}
+    <div className="w-full h-screen flex flex-col lg:flex-row overflow-hidden bg-white">
+      {/* Barra Lateral Esquerda com Navegação */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Área Central Principal */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white">
+      {/* Área Central Principal em Tela Cheia */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white h-full overflow-hidden">
         <Header 
           onSearchClick={() => setActiveTab('resolutions')} 
           onNotificationsClick={() => setActiveTab('dashboard')} 
@@ -39,9 +38,8 @@ export const AppContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Barra Lateral Direita com Perfil e Métricas */}
+      {/* Barra Lateral Direita com Perfil e Indicadores */}
       <RightPanel />
-
     </div>
   );
 };

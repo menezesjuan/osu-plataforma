@@ -13,8 +13,6 @@ import { ActiveTab } from './Navbar';
 interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  isOpen?: boolean;
-  onClose?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
@@ -29,7 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
   ];
 
   return (
-    <aside className="w-64 shrink-0 bg-white border-r border-slate-100 p-6 flex flex-col justify-between select-none">
+    <aside className="w-64 h-full shrink-0 bg-white border-r border-slate-100 p-6 flex flex-col justify-between select-none">
       <div>
         {/* Logo estilo Astrum com constelação de pontos coloridos */}
         <div 
@@ -89,45 +87,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         </nav>
       </div>
 
-      {/* Ilustração estilo Estudante lendo sobre os livros */}
-      <div className="relative mt-8 pt-4">
-        <div className="rounded-3xl bg-gradient-to-br from-rose-50/70 to-orange-50/60 p-4 border border-rose-100/50 flex flex-col items-center text-center overflow-hidden">
-          {/* Gráfico SVG ilustrado */}
-          <div className="w-28 h-28 relative flex items-center justify-center">
-            {/* Folhas/Raminho decorativo */}
-            <svg className="absolute -left-2 bottom-4 w-10 h-16 text-rose-300 opacity-60" viewBox="0 0 40 70" fill="currentColor">
-              <path d="M20,65 Q10,40 25,10 Q22,25 30,35 Q15,45 20,65 Z" />
-              <circle cx="15" cy="20" r="3" />
-              <circle cx="28" cy="30" r="3" />
-              <circle cx="12" cy="45" r="3" />
-            </svg>
-
-            {/* Livros empilhados ilustrados */}
-            <div className="absolute bottom-2 flex flex-col items-center">
-              <div className="w-20 h-4 bg-orange-600 rounded-sm shadow-sm transform -rotate-1"></div>
-              <div className="w-22 h-3.5 bg-blue-900 rounded-sm shadow-sm -mt-0.5"></div>
-              <div className="w-24 h-4 bg-orange-500 rounded-sm shadow-sm -mt-0.5"></div>
-            </div>
-
-            {/* Personagem estudante sentado */}
-            <div className="absolute bottom-10 flex flex-col items-center">
-              {/* Cabeça & Cabelo */}
-              <div className="w-7 h-7 rounded-full bg-slate-800 relative">
-                <div className="w-5 h-5 rounded-full bg-amber-200 mx-auto mt-2"></div>
-              </div>
-              {/* Corpo */}
-              <div className="w-8 h-8 rounded-t-lg bg-orange-500 -mt-1 flex items-center justify-center">
-                {/* Livrinho nas mãos */}
-                <div className="w-5 h-4 bg-white rounded-xs border border-slate-300 -mb-2"></div>
-              </div>
-              {/* Pernas cruzadas */}
-              <div className="w-12 h-3 bg-slate-800 rounded-full -mt-0.5"></div>
-            </div>
-          </div>
-
-          <span className="text-xs font-bold text-slate-700 mt-2">OSU Assembleia 2026</span>
-          <span className="text-[10px] text-slate-400 mt-0.5">Simulação Escolar Ativa</span>
-        </div>
+      {/* Rodapé Limpo da Barra Lateral */}
+      <div className="pt-4 border-t border-slate-100 text-[11px] font-semibold text-slate-400 text-center">
+        <span>OSU • Assembleia 2026</span>
       </div>
     </aside>
   );

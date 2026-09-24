@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-[#e6ebf5] text-slate-800 antialiased font-sans selection:bg-orange-500 selection:text-white min-h-screen p-2 sm:p-4 lg:p-6 flex items-center justify-center;
+  html, body {
+    @apply h-full w-full m-0 p-0 overflow-hidden bg-white text-slate-800 antialiased font-sans selection:bg-orange-500 selection:text-white;
+  }
+  #root {
+    @apply h-full w-full;
   }
 }
 

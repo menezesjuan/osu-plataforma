@@ -9,7 +9,8 @@ import {
   Edit3,
   UserCheck,
   Building2,
-  GraduationCap
+  GraduationCap,
+  Key
 } from 'lucide-react';
 import { useOsu } from '../../context/OsuContext';
 import { Delegation, EducationLevel } from '../../types';
@@ -31,8 +32,8 @@ export const DelegationsView: React.FC = () => {
   const [flagEmoji, setFlagEmoji] = useState('🇧🇷');
   const [chiefDelegate, setChiefDelegate] = useState('');
   const [delegatesInput, setDelegatesInput] = useState('');
-  const [advisorTeacher, setAdvisorTeacher] = useState('');
-  const [committeeId, setCommitteeId] = useState(committees[0]?.id || 'csma');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const openNewModal = () => {
     setEditingDelegation(null);
@@ -42,8 +43,8 @@ export const DelegationsView: React.FC = () => {
     setFlagEmoji('🇧🇷');
     setChiefDelegate('');
     setDelegatesInput('');
-    setAdvisorTeacher('');
-    setCommitteeId(committees[0]?.id || 'csma');
+    setUsername('');
+    setPassword('');
     setModalOpen(true);
   };
 
@@ -55,8 +56,8 @@ export const DelegationsView: React.FC = () => {
     setFlagEmoji(del.flagEmoji);
     setChiefDelegate(del.chiefDelegate);
     setDelegatesInput(del.delegates.join(', '));
-    setAdvisorTeacher(del.advisorTeacher);
-    setCommitteeId(del.committeeId);
+    setUsername(del.username || '');
+    setPassword(del.password || '');
     setModalOpen(true);
   };
 
@@ -82,8 +83,8 @@ export const DelegationsView: React.FC = () => {
         flagEmoji: flagEmoji || '🏛️',
         chiefDelegate,
         delegates: delegatesList,
-        advisorTeacher,
-        committeeId,
+        username: username.trim() || undefined,
+        password: password.trim() || undefined,
       });
     } else {
       addDelegation({
@@ -93,8 +94,8 @@ export const DelegationsView: React.FC = () => {
         flagEmoji: flagEmoji || '🏛️',
         chiefDelegate,
         delegates: delegatesList,
-        advisorTeacher,
-        committeeId,
+        username: username.trim() || undefined,
+        password: password.trim() || undefined,
         isPresent: true,
       });
     }
@@ -221,13 +222,15 @@ export const DelegationsView: React.FC = () => {
 
               {/* Informações da Delegação */}
               <div className="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Comitê:</span>
-                  <span className="text-slate-700 flex items-center gap-1 font-semibold mt-0.5">
-                    <Building2 className="w-3.5 h-3.5 text-blue-500" />
-                    {getCommitteeName(del.committeeId)}
-                  </span>
-                </div>
+                {del.committeeId && (
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Comitê:</span>
+                    <span className="text-slate-700 flex items-center gap-1 font-semibold mt-0.5">
+                      <Building2 className="w-3.5 h-3.5 text-blue-500" />
+                      {getCommitteeName(del.committeeId)}
+                    </span>
+                  </div>
+                )}
 
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Porta-voz Principal:</span>
@@ -249,6 +252,14 @@ export const DelegationsView: React.FC = () => {
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Orientador(a):</span>
                     <span className="text-slate-600 italic font-medium">{del.advisorTeacher}</span>
+                  </div>
+                )}
+
+                {del.username && (
+                  <div className="pt-1 border-t border-slate-100/60 flex items-center gap-1.5">
+                    <Key className="w-3 h-3 text-orange-500" />
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Usuário:</span>
+                    <span className="text-slate-700 font-mono text-[11px] font-bold bg-slate-100 px-1.5 py-0.5 rounded">@{del.username}</span>
                   </div>
                 )}
               </div>
@@ -350,19 +361,6 @@ export const DelegationsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Comitê Designado</label>
-                <select
-                  value={committeeId}
-                  onChange={(e) => setCommitteeId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-orange-500"
-                >
-                  {committees.map(c => (
-                    <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <label className="block font-bold text-slate-700 mb-1">Porta-voz Principal</label>
                 <input
                   type="text"
@@ -384,15 +382,27 @@ export const DelegationsView: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Professor(a) Orientador(a)</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Profa. Helena Ramos"
-                  value={advisorTeacher}
-                  onChange={(e) => setAdvisorTeacher(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-orange-500"
-                />
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Usuário</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: bancada_franca"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Senha</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-orange-500"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">

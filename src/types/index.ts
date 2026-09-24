@@ -8,11 +8,14 @@ export interface Delegation {
   flagEmoji: string;
   chiefDelegate: string;
   delegates: string[];
-  advisorTeacher: string;
-  committeeId: string;
+  username?: string;
+  password?: string;
+  advisorTeacher?: string;
+  committeeId?: string;
   isPresent: boolean;
   avatarColor?: string;
 }
+
 
 export interface Committee {
   id: string;

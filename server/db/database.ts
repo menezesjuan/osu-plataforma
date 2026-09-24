@@ -200,19 +200,6 @@ export function seedAllData() {
       d.isPresent ? 1 : 0,
       d.avatarColor || 'bg-blue-500'
     );
-
-    // Também cria login para a bancada
-    if (d.username) {
-      insertUser.run(
-        `usr-del-${d.id}`,
-        d.username,
-        d.password || '123456',
-        d.chiefDelegate || d.representation,
-        'student',
-        `Bancada de ${d.representation} (${d.name})`,
-        d.id
-      );
-    }
   }
 
   // 4. Resoluções
@@ -343,25 +330,9 @@ export function createDelegation(del: Omit<Delegation, 'id'>): Delegation {
     del.avatarColor || 'bg-orange-500'
   );
 
-  // Também cria o usuário correspondente
-  db.prepare(`
-    INSERT OR REPLACE INTO users (id, username, password, name, role, title, delegation_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    `usr-del-${id}`,
-    username,
-    password,
-    del.chiefDelegate || del.representation,
-    'student',
-    `Bancada de ${del.representation} (${del.name})`,
-    id
-  );
-
   return {
     ...del,
     id,
-    username,
-    password,
   };
 }
 
@@ -387,21 +358,6 @@ export function updateDelegation(del: Delegation): void {
     del.avatarColor || 'bg-blue-500',
     del.id
   );
-
-  if (del.username) {
-    db.prepare(`
-      INSERT OR REPLACE INTO users (id, username, password, name, role, title, delegation_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      `usr-del-${del.id}`,
-      del.username,
-      del.password || '123456',
-      del.chiefDelegate || del.representation,
-      'student',
-      `Bancada de ${del.representation} (${del.name})`,
-      del.id
-    );
-  }
 }
 
 export function togglePresence(id: string): boolean {
@@ -414,7 +370,6 @@ export function togglePresence(id: string): boolean {
 
 export function deleteDelegation(id: string): void {
   db.prepare('DELETE FROM delegations WHERE id = ?').run(id);
-  db.prepare('DELETE FROM users WHERE delegation_id = ?').run(id);
 }
 
 export function getAllResolutions(): Resolution[] {
@@ -680,16 +635,15 @@ export function authenticateUser(username: string, password: string): { user: Cu
   const cleanUser = username.trim().toLowerCase();
   const cleanPass = password.trim();
 
-  const row = db.prepare('SELECT * FROM users WHERE LOWER(username) = ? AND password = ?').get(cleanUser, cleanPass) as any;
+  const row = db.prepare("SELECT * FROM users WHERE LOWER(username) = ? AND password = ? AND role = 'admin'").get(cleanUser, cleanPass) as any;
   if (!row) return null;
 
   return {
     user: {
       id: row.id,
       name: row.name,
-      role: row.role,
+      role: 'admin',
       title: row.title,
-      delegationId: row.delegation_id || undefined,
     }
   };
 }

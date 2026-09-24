@@ -3,7 +3,7 @@ import { Send, MessageSquare, LogOut, RotateCcw, ShieldCheck } from 'lucide-reac
 import { useOsu } from '../../context/OsuContext';
 
 export const RightPanel: React.FC = () => {
-  const { chatMessages, sendChatMessage, resetAllData, currentUser, switchUserRole, delegations, logout } = useOsu();
+  const { chatMessages, sendChatMessage, resetAllData, currentUser, logout } = useOsu();
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -48,30 +48,13 @@ export const RightPanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Seletor de Perfil Ativo para Demonstração */}
+        {/* Indicador de Acesso Administrador */}
         <div className="pt-2 border-t border-slate-200/50 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Perfil:</span>
-          <select
-            value={currentUser.role === 'admin' ? 'admin' : (currentUser.delegationId || delegations[0]?.id)}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === 'admin') {
-                switchUserRole('admin');
-              } else {
-                switchUserRole('student', val);
-              }
-            }}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white border border-slate-200 text-slate-700 focus:outline-none focus:border-orange-500 max-w-[190px] truncate"
-          >
-            <option value="admin">👑 Mesa Diretora (Admin)</option>
-            <optgroup label="Bancadas / Alunos">
-              {delegations.map(del => (
-                <option key={del.id} value={del.id}>
-                  🎓 {del.flagEmoji} {del.name} ({del.representation})
-                </option>
-              ))}
-            </optgroup>
-          </select>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Acesso:</span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 border border-orange-200/80 text-orange-700 text-[10px] font-extrabold">
+            <ShieldCheck className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+            <span>Mesa Diretora (Admin)</span>
+          </span>
         </div>
       </div>
 

@@ -8,18 +8,21 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onSearchClick, onNotificationsClick }) => {
-  const { notices, liveVote } = useOsu();
+  const { notices, liveVote, currentUser } = useOsu();
   const unreadCount = notices.length + (liveVote ? 1 : 0);
+  const firstName = currentUser.name.split(' ')[0] || 'Delegado';
 
   return (
     <div className="flex items-center justify-between py-6 px-8 border-b border-slate-100/80 bg-white">
       {/* Saudação amigável */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
-          Olá, <span className="text-orange-500">Juan!</span>
+          Olá, <span className="text-orange-500">{firstName}!</span>
         </h1>
         <p className="text-xs text-slate-400 font-medium mt-0.5">
-          Painel de Controle da Mesa • Organização das Salas Unidas
+          {currentUser.role === 'admin' 
+            ? 'Painel de Controle da Mesa • Organização das Salas Unidas'
+            : `${currentUser.title} • Organização das Salas Unidas`}
         </p>
       </div>
 

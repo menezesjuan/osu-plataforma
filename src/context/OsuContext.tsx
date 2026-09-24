@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Committee, Delegation, Resolution, Notice, LiveVoteState, ResolutionStatus, ChatMessage, ScheduleItem } from '../types';
+import { Committee, Delegation, Resolution, Notice, LiveVoteState, ResolutionStatus, ChatMessage, ScheduleItem, CurrentUser, UserRole } from '../types';
 import { INITIAL_COMMITTEES, INITIAL_DELEGATIONS, INITIAL_RESOLUTIONS, INITIAL_NOTICES, INITIAL_CHAT_MESSAGES, INITIAL_SCHEDULE_ITEMS } from '../data/mockData';
 
 interface OsuContextType {
@@ -10,6 +10,9 @@ interface OsuContextType {
   liveVote: LiveVoteState | null;
   chatMessages: ChatMessage[];
   scheduleItems: ScheduleItem[];
+  currentUser: CurrentUser;
+  setCurrentUser: (user: CurrentUser) => void;
+  switchUserRole: (role: UserRole, delegationId?: string) => void;
   togglePresence: (delegationId: string) => void;
   addDelegation: (delegation: Omit<Delegation, 'id'>) => void;
   updateDelegation: (delegation: Delegation) => void;
@@ -37,6 +40,7 @@ const STORAGE_KEYS = {
   LIVE_VOTE: 'osu_live_vote_v1',
   CHAT_MESSAGES: 'osu_chat_messages_v1',
   SCHEDULE: 'osu_schedule_v1',
+  CURRENT_USER: 'osu_current_user_v1',
 };
 
 const OsuContext = createContext<OsuContextType | undefined>(undefined);
@@ -97,6 +101,43 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return INITIAL_SCHEDULE_ITEMS;
     }
   });
+
+  const DEFAULT_ADMIN_USER: CurrentUser = {
+    id: 'usr-admin-1',
+    name: 'Juan Menezes',
+    role: 'admin',
+    title: 'Presidente da Mesa',
+  };
+
+  const [currentUser, setCurrentUser] = useState<CurrentUser>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      return saved ? JSON.parse(saved) : DEFAULT_ADMIN_USER;
+    } catch {
+      return DEFAULT_ADMIN_USER;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+  }, [currentUser]);
+
+  const switchUserRole = (role: UserRole, delegationId?: string) => {
+    if (role === 'admin') {
+      setCurrentUser(DEFAULT_ADMIN_USER);
+    } else {
+      const targetDel = delegations.find(d => d.id === delegationId) || delegations[0];
+      if (targetDel) {
+        setCurrentUser({
+          id: `usr-student-${targetDel.id}`,
+          name: targetDel.chiefDelegate || 'Delegado(a) Estudantil',
+          role: 'student',
+          title: `Bancada de ${targetDel.representation} (${targetDel.name})`,
+          delegationId: targetDel.id,
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SCHEDULE, JSON.stringify(scheduleItems));
@@ -315,6 +356,9 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         liveVote,
         chatMessages,
         scheduleItems,
+        currentUser,
+        setCurrentUser,
+        switchUserRole,
         togglePresence,
         addDelegation,
         updateDelegation,

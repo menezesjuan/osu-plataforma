@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { OsuProvider } from './context/OsuContext';
+import { OsuProvider, useOsu } from './context/OsuContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { RightPanel } from './components/layout/RightPanel';
 import { ActiveTab } from './components/layout/Navbar';
 import { DashboardView } from './components/dashboard/DashboardView';
+import { StudentDashboardView } from './components/dashboard/StudentDashboardView';
 import { DelegationsView } from './components/delegations/DelegationsView';
 import { CommitteesView } from './components/committees/CommitteesView';
 import { ResolutionsView } from './components/resolutions/ResolutionsView';
@@ -13,6 +14,7 @@ import { DebateTimerView } from './components/timer/DebateTimerView';
 import { RulesView } from './components/rules/RulesView';
 
 export const AppContent: React.FC = () => {
+  const { currentUser } = useOsu();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
   return (
@@ -28,7 +30,13 @@ export const AppContent: React.FC = () => {
         />
 
         <div className="flex-1 overflow-y-auto">
-          {activeTab === 'dashboard' && <DashboardView onNavigate={setActiveTab} />}
+          {activeTab === 'dashboard' && (
+            currentUser.role === 'student' ? (
+              <StudentDashboardView onNavigate={setActiveTab} />
+            ) : (
+              <DashboardView onNavigate={setActiveTab} />
+            )
+          )}
           {activeTab === 'delegations' && <DelegationsView />}
           {activeTab === 'committees' && <CommitteesView onNavigate={setActiveTab} />}
           {activeTab === 'resolutions' && <ResolutionsView onNavigate={setActiveTab} />}

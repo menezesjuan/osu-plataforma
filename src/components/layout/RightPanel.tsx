@@ -3,12 +3,12 @@ import { Send, MessageSquare, LogOut, RotateCcw, ShieldCheck } from 'lucide-reac
 import { useOsu } from '../../context/OsuContext';
 
 export const RightPanel: React.FC = () => {
-  const { chatMessages, sendChatMessage, resetAllData } = useOsu();
+  const { chatMessages, sendChatMessage, resetAllData, currentUser, switchUserRole, delegations } = useOsu();
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const userName = "Juan Menezes";
-  const userInitial = userName.trim().charAt(0).toUpperCase();
+  const userName = currentUser.name;
+  const userInitial = userName.trim().charAt(0).toUpperCase() || 'U';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -22,7 +22,12 @@ export const RightPanel: React.FC = () => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    sendChatMessage(inputText, userName, 'Presidente da Mesa', true);
+    sendChatMessage(
+      inputText, 
+      currentUser.name, 
+      currentUser.title, 
+      currentUser.role === 'admin'
+    );
     setInputText('');
   };
 
@@ -30,15 +35,43 @@ export const RightPanel: React.FC = () => {
     <aside className="w-80 h-full shrink-0 bg-white border-l border-slate-100 flex flex-col justify-between select-none">
       
       {/* Topo: Identificador do Usuário */}
-      <div className="p-5 border-b border-slate-100 flex items-center gap-3.5 bg-slate-50/40">
-        {/* Quadrado com a primeira letra do nome */}
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xs font-black text-xl border border-orange-400/40 shrink-0">
-          {userInitial}
+      <div className="p-4 border-b border-slate-100 bg-slate-50/40 space-y-2.5">
+        <div className="flex items-center gap-3">
+          {/* Quadrado com a primeira letra do nome */}
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xs font-black text-lg border border-orange-400/40 shrink-0">
+            {userInitial}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-extrabold text-slate-800 truncate">{currentUser.name}</h3>
+            <span className="text-[11px] font-bold text-orange-500 block truncate">{currentUser.title}</span>
+          </div>
         </div>
 
-        <div className="min-w-0">
-          <h3 className="text-sm font-extrabold text-slate-800 truncate">{userName}</h3>
-          <span className="text-[11px] font-bold text-orange-500 block truncate">Presidente da Mesa</span>
+        {/* Seletor de Perfil Ativo para Demonstração */}
+        <div className="pt-2 border-t border-slate-200/50 flex items-center justify-between gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Perfil:</span>
+          <select
+            value={currentUser.role === 'admin' ? 'admin' : (currentUser.delegationId || delegations[0]?.id)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === 'admin') {
+                switchUserRole('admin');
+              } else {
+                switchUserRole('student', val);
+              }
+            }}
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white border border-slate-200 text-slate-700 focus:outline-none focus:border-orange-500 max-w-[190px] truncate"
+          >
+            <option value="admin">👑 Mesa Diretora (Admin)</option>
+            <optgroup label="Bancadas / Alunos">
+              {delegations.map(del => (
+                <option key={del.id} value={del.id}>
+                  🎓 {del.flagEmoji} {del.name} ({del.representation})
+                </option>
+              ))}
+            </optgroup>
+          </select>
         </div>
       </div>
 

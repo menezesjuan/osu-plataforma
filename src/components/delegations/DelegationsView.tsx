@@ -16,7 +16,7 @@ import { useOsu } from '../../context/OsuContext';
 import { Delegation, EducationLevel } from '../../types';
 
 export const DelegationsView: React.FC = () => {
-  const { delegations, committees, togglePresence, addDelegation, updateDelegation, deleteDelegation } = useOsu();
+  const { delegations, committees, currentUser, togglePresence, addDelegation, updateDelegation, deleteDelegation } = useOsu();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState<string>('todos');
@@ -134,13 +134,19 @@ export const DelegationsView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={openNewModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Nova Turma / Bancada
-        </button>
+        {currentUser.role === 'admin' ? (
+          <button
+            onClick={openNewModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition self-start sm:self-auto"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Turma / Bancada
+          </button>
+        ) : (
+          <div className="px-3.5 py-2 rounded-2xl bg-slate-100 text-slate-500 text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto border border-slate-200">
+            <span>Modo Consulta • Bancadas Oficiais</span>
+          </div>
+        )}
       </div>
 
       {/* Barra de Filtros */}
@@ -207,9 +213,16 @@ export const DelegationsView: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={() => togglePresence(del.id)}
-                  title={del.isPresent ? 'Marcar ausente' : 'Marcar presente'}
+                  onClick={() => currentUser.role === 'admin' && togglePresence(del.id)}
+                  disabled={currentUser.role !== 'admin'}
+                  title={
+                    currentUser.role === 'admin'
+                      ? (del.isPresent ? 'Marcar ausente' : 'Marcar presente')
+                      : 'Controle de presença gerido pela Mesa Diretora'
+                  }
                   className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition ${
+                    currentUser.role !== 'admin' ? 'cursor-default opacity-90' : 'cursor-pointer'
+                  } ${
                     del.isPresent 
                       ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' 
                       : 'bg-rose-50 text-rose-500 border border-rose-200'
@@ -272,26 +285,28 @@ export const DelegationsView: React.FC = () => {
                 {del.isPresent ? 'Apto a votar' : 'Sem direito a voto'}
               </span>
 
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => openEditModal(del)}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
-                  title="Editar delegação"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Deseja remover a delegação ${del.name}?`)) {
-                      deleteDelegation(del.id);
-                    }
-                  }}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition"
-                  title="Excluir delegação"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {currentUser.role === 'admin' && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => openEditModal(del)}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+                    title="Editar delegação"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Deseja remover a delegação ${del.name}?`)) {
+                        deleteDelegation(del.id);
+                      }
+                    }}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition"
+                    title="Excluir delegação"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
           </div>

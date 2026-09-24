@@ -1,5 +1,15 @@
 export type EducationLevel = 'Fundamental II' | 'Ensino Médio';
 
+export type UserRole = 'admin' | 'student';
+
+export interface CurrentUser {
+  id: string;
+  name: string;
+  role: UserRole;
+  title: string;
+  delegationId?: string;
+}
+
 export interface Delegation {
   id: string;
   name: string; // Ex: "9º Ano A", "2º Ano B"

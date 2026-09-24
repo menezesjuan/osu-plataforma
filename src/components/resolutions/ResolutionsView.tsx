@@ -20,8 +20,10 @@ interface ResolutionsViewProps {
 }
 
 export const ResolutionsView: React.FC<ResolutionsViewProps> = ({ onNavigate }) => {
-  const { resolutions, committees, delegations, addResolution, updateResolutionStatus, deleteResolution, startLiveVoting } = useOsu();
+  const { resolutions, committees, delegations, currentUser, addResolution, updateResolutionStatus, deleteResolution, startLiveVoting } = useOsu();
   
+  const myDelegation = delegations.find(d => d.id === currentUser.delegationId) || delegations[0];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCommittee, setFilterCommittee] = useState('todos');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
@@ -34,7 +36,7 @@ export const ResolutionsView: React.FC<ResolutionsViewProps> = ({ onNavigate }) 
   const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
   const [committeeId, setCommitteeId] = useState(committees[0]?.id || 'csma');
-  const [mainSponsorId, setMainSponsorId] = useState(delegations[0]?.id || '');
+  const [mainSponsorId, setMainSponsorId] = useState(currentUser.role === 'student' && myDelegation ? myDelegation.id : (delegations[0]?.id || ''));
   const [coSponsorsInput, setCoSponsorsInput] = useState('');
   const [preambleInput, setPreambleInput] = useState('');
   const [operativeInput, setOperativeInput] = useState('');
@@ -45,7 +47,7 @@ export const ResolutionsView: React.FC<ResolutionsViewProps> = ({ onNavigate }) 
     setCode(`RES-${selectedCom?.code || 'OSU'}/0${seq}`);
     setTitle('');
     setCommitteeId(selectedCom?.id || 'csma');
-    setMainSponsorId(delegations[0]?.id || '');
+    setMainSponsorId(currentUser.role === 'student' && myDelegation ? myDelegation.id : (delegations[0]?.id || ''));
     setCoSponsorsInput('');
     setPreambleInput('Considerando a relevância desta pauta para a comunidade escolar;\nReconhecendo o papel ativo dos estudantes na construção de melhorias;');
     setOperativeInput('1. Propõe a realização de campanhas educativas contínuas nas turmas;\n2. Determina a criação de uma comissão mista discente;');
@@ -273,7 +275,7 @@ export const ResolutionsView: React.FC<ResolutionsViewProps> = ({ onNavigate }) 
               </button>
 
               <div className="flex items-center gap-2">
-                {res.status !== 'aprovado' && res.status !== 'rejeitado' && (
+                {currentUser.role === 'admin' && res.status !== 'aprovado' && res.status !== 'rejeitado' && (
                   <button
                     onClick={() => handleStartVotingFromResolution(res)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-sm transition"
@@ -283,30 +285,34 @@ export const ResolutionsView: React.FC<ResolutionsViewProps> = ({ onNavigate }) 
                   </button>
                 )}
 
-                <select
-                  value={res.status}
-                  onChange={(e) => updateResolutionStatus(res.id, e.target.value as ResolutionStatus)}
-                  className="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold focus:outline-none"
-                  title="Alterar status"
-                >
-                  <option value="redacao">Redação</option>
-                  <option value="analise_mesa">Análise</option>
-                  <option value="em_debate">Em Debate</option>
-                  <option value="aprovado">Aprovado</option>
-                  <option value="rejeitado">Rejeitado</option>
-                </select>
+                {currentUser.role === 'admin' && (
+                  <select
+                    value={res.status}
+                    onChange={(e) => updateResolutionStatus(res.id, e.target.value as ResolutionStatus)}
+                    className="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold focus:outline-none"
+                    title="Alterar status"
+                  >
+                    <option value="redacao">Redação</option>
+                    <option value="analise_mesa">Análise</option>
+                    <option value="em_debate">Em Debate</option>
+                    <option value="aprovado">Aprovado</option>
+                    <option value="rejeitado">Rejeitado</option>
+                  </select>
+                )}
 
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Excluir a minuta ${res.code}?`)) {
-                      deleteResolution(res.id);
-                    }
-                  }}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition"
-                  title="Excluir"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {(currentUser.role === 'admin' || (currentUser.role === 'student' && res.mainSponsorId === myDelegation?.id)) && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Excluir a minuta ${res.code}?`)) {
+                        deleteResolution(res.id);
+                      }
+                    }}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition"
+                    title="Excluir minuta"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -462,15 +468,22 @@ export const ResolutionsView: React.FC<ResolutionsViewProps> = ({ onNavigate }) 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Turma Proponente</label>
-                  <select
-                    value={mainSponsorId}
-                    onChange={(e) => setMainSponsorId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-orange-500"
-                  >
-                    {delegations.map(d => (
-                      <option key={d.id} value={d.id}>{d.name} ({d.representation})</option>
-                    ))}
-                  </select>
+                  {currentUser.role === 'admin' ? (
+                    <select
+                      value={mainSponsorId}
+                      onChange={(e) => setMainSponsorId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-orange-500"
+                    >
+                      {delegations.map(d => (
+                        <option key={d.id} value={d.id}>{d.name} ({d.representation})</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-800 font-bold text-xs flex items-center justify-between">
+                      <span>{myDelegation ? `${myDelegation.name} (${myDelegation.representation})` : 'Minha Bancada'}</span>
+                      <span>{myDelegation?.flagEmoji}</span>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Co-proponentes</label>

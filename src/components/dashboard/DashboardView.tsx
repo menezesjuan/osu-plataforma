@@ -307,9 +307,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               </button>
             </div>
 
-            {/* Lista de Cards de Tópicos / Pautas */}
+            {/* Lista de Cards de Tópicos / Pautas (Máximo 3 pré-visualizáveis) */}
             <div className="space-y-3">
-              {resolutions.map((res, index) => {
+              {resolutions.slice(0, 3).map((res, index) => {
                 const isUnderVoteNow = liveVote?.resolutionId === res.id;
                 const isDebating = res.status === 'em_debate';
                 const isApproved = res.status === 'aprovado';
@@ -388,6 +388,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                   </div>
                 );
               })}
+
+              {resolutions.length > 3 && (
+                <button
+                  onClick={() => onNavigate('resolutions')}
+                  className="w-full py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/60 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs"
+                >
+                  <span>Ver todas as {resolutions.length} pautas na aba de Resoluções</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-orange-500" />
+                </button>
+              )}
             </div>
           </div>
 

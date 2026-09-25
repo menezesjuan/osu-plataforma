@@ -335,17 +335,37 @@ export const OsuProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // Fallback offline caso a chamada ao backend falhe
     }
 
-    // Validação local de contingência (apenas contas administradoras)
-    if (
-      (cleanUser === 'admin' || cleanUser === 'mesa' || cleanUser === 'juan') &&
-      (cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === '123456' || cleanPass === 'mesa123')
-    ) {
+    // Validação local de contingência para administradores
+    const validAdminUsers = ['admin', 'mesa', 'juan'];
+    const validAdminPasswords = ['admin', 'admin123', '123456', 'mesa123'];
+
+    if (validAdminUsers.includes(cleanUser) && validAdminPasswords.includes(cleanPass)) {
       setCurrentUser(DEFAULT_ADMIN_USER);
       setIsAuthenticated(true);
       return { success: true };
     }
 
-    return { success: false, message: 'Acesso restrito. Credenciais de administrador inválidas.' };
+    // Validação local de contingência para bancadas/alunos cadastrados
+    const matchedDel = delegations.find(d => {
+      const userMatches = d.username && d.username.toLowerCase() === cleanUser;
+      const repMatches = d.representation.toLowerCase() === cleanUser;
+      const nameMatches = d.name.toLowerCase() === cleanUser;
+      return userMatches || repMatches || nameMatches;
+    });
+
+    if (matchedDel && matchedDel.password && matchedDel.password.trim() === cleanPass) {
+      setCurrentUser({
+        id: `usr-del-${matchedDel.id}`,
+        name: matchedDel.chiefDelegate || matchedDel.representation,
+        role: 'student',
+        title: `Bancada de ${matchedDel.representation} (${matchedDel.name})`,
+        delegationId: matchedDel.id,
+      });
+      setIsAuthenticated(true);
+      return { success: true };
+    }
+
+    return { success: false, message: 'Usuário ou senha incorretos. Verifique suas credenciais.' };
   };
 
   const logout = () => {

@@ -331,9 +331,27 @@ export function createDelegation(del: Omit<Delegation, 'id'>): Delegation {
     del.avatarColor || 'bg-orange-500'
   );
 
+  // Se a bancada possuir usuário e senha cadastrados, cria o acesso na tabela users
+  if (username) {
+    db.prepare(`
+      INSERT OR REPLACE INTO users (id, username, password, name, role, title, delegation_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      `usr-del-${id}`,
+      username.toLowerCase().trim(),
+      password.trim(),
+      del.chiefDelegate || del.representation,
+      'student',
+      `Bancada de ${del.representation} (${del.name})`,
+      id
+    );
+  }
+
   return {
     ...del,
     id,
+    username,
+    password,
   };
 }
 
@@ -359,6 +377,24 @@ export function updateDelegation(del: Delegation): void {
     del.avatarColor || 'bg-blue-500',
     del.id
   );
+
+  // Atualiza ou remove credenciais de acesso da bancada
+  if (del.username) {
+    db.prepare(`
+      INSERT OR REPLACE INTO users (id, username, password, name, role, title, delegation_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      `usr-del-${del.id}`,
+      del.username.toLowerCase().trim(),
+      (del.password || '123456').trim(),
+      del.chiefDelegate || del.representation,
+      'student',
+      `Bancada de ${del.representation} (${del.name})`,
+      del.id
+    );
+  } else {
+    db.prepare('DELETE FROM users WHERE delegation_id = ?').run(del.id);
+  }
 }
 
 export function togglePresence(id: string): boolean {
@@ -371,6 +407,7 @@ export function togglePresence(id: string): boolean {
 
 export function deleteDelegation(id: string): void {
   db.prepare('DELETE FROM delegations WHERE id = ?').run(id);
+  db.prepare('DELETE FROM users WHERE delegation_id = ?').run(id);
 }
 
 export function getAllResolutions(): Resolution[] {
@@ -639,22 +676,28 @@ export function authenticateUser(username: string, password: string): { user: Cu
   const validAdminUsers = ['admin', 'mesa', 'juan'];
   const validAdminPasswords = ['admin', 'admin123', '123456', 'mesa123'];
 
-  // Busca o usuário administrador
-  const row = db.prepare("SELECT * FROM users WHERE LOWER(username) = ? AND role = 'admin'").get(cleanUser) as any;
+  // 1. Busca usuário na tabela users (seja admin ou estudante de bancada)
+  const row = db.prepare("SELECT * FROM users WHERE LOWER(username) = ?").get(cleanUser) as any;
   if (row) {
-    if (row.password === cleanPass || validAdminPasswords.includes(cleanPass)) {
+    const isPasswordCorrect =
+      row.role === 'admin'
+        ? (row.password === cleanPass || validAdminPasswords.includes(cleanPass))
+        : (row.password === cleanPass);
+
+    if (isPasswordCorrect) {
       return {
         user: {
           id: row.id,
           name: row.name,
-          role: 'admin',
+          role: row.role as 'admin' | 'student',
           title: row.title,
+          delegationId: row.delegation_id || undefined,
         }
       };
     }
   }
 
-  // Fallback caso seja um identificador de admin válido
+  // 2. Fallback de contingência caso seja um identificador de admin válido
   if (validAdminUsers.includes(cleanUser) && validAdminPasswords.includes(cleanPass)) {
     return {
       user: {
@@ -662,6 +705,24 @@ export function authenticateUser(username: string, password: string): { user: Cu
         name: 'Juan Menezes',
         role: 'admin',
         title: 'Presidente da Mesa',
+      }
+    };
+  }
+
+  // 3. Fallback: verificar se coincide com usuário de alguma bancada na tabela delegations
+  const delRow = db.prepare(`
+    SELECT * FROM delegations 
+    WHERE (LOWER(username) = ? OR LOWER(representation) = ? OR LOWER(name) = ?)
+  `).get(cleanUser, cleanUser, cleanUser) as any;
+
+  if (delRow && delRow.username && delRow.password === cleanPass) {
+    return {
+      user: {
+        id: `usr-del-${delRow.id}`,
+        name: delRow.chief_delegate || delRow.representation,
+        role: 'student',
+        title: `Bancada de ${delRow.representation} (${delRow.name})`,
+        delegationId: delRow.id,
       }
     };
   }

@@ -48,13 +48,20 @@ export const RightPanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Indicador de Acesso Administrador */}
+        {/* Indicador de Acesso */}
         <div className="pt-2 border-t border-slate-200/50 flex items-center justify-between gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Acesso:</span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 border border-orange-200/80 text-orange-700 text-[10px] font-extrabold">
-            <ShieldCheck className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-            <span>Mesa Diretora (Admin)</span>
-          </span>
+          {currentUser.role === 'admin' ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 border border-orange-200/80 text-orange-700 text-[10px] font-extrabold">
+              <ShieldCheck className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+              <span>Mesa Diretora (Admin)</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-700 text-[10px] font-extrabold">
+              <span>🎓</span>
+              <span className="truncate max-w-[150px]">Delegado Estudantil</span>
+            </span>
+          )}
         </div>
       </div>
 
